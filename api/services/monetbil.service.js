@@ -10,7 +10,7 @@ const makePayment = async (user, amount, mobileMoneyPhone,product,quantity) => {
     service: monetbilService,
     phonenumber:mobileMoneyPhone,
     amount:1,
-    user:`${user.phonenumber}(Pseudo : ${user.pseudo})`,
+    user:`${user.phoneNumber}(Pseudo : ${user.pseudo})`,
     first_name:product?.name,
     last_name:quantity,
     email:product?.price,

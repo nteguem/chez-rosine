@@ -15,7 +15,6 @@ async function handlePaymentMonetbilSuccess(req, res, client) {
     const pdfBase64Invoice = pdfBufferInvoice.toString("base64");
     const pdfNameInvoice = `Invoice_${whatappNumberOnly}`;
     const documentType = "application/pdf";
-    console.log("req.body",req.body)
     await Promise.all([
       sendMediaToNumber(client,whatappNumberOnly, documentType, pdfBase64Invoice, pdfNameInvoice),
       sendMessageToNumber(client,whatappNumberOnly, successMessage),
