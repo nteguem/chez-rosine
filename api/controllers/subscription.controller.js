@@ -10,7 +10,7 @@ async function handlePaymentMonetbilSuccess(req, res, client) {
   try {
     const whatappNumberOnly = req.body.user.split('(')[0].trim();
     const location = req.body.user.split(')')[1].trim();
-    const user = req.body.user.split(')')[0].trim();
+    const user = req.body.user.split(')')[0].trim()+')';
     req.body.date = moment().format('dddd D MMMM YYYY');
     req.body.location = location;
     req.body.user = user;
