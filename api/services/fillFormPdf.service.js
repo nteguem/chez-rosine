@@ -10,7 +10,7 @@ async function fillPdfFields(inputPath, data) {
         await fillTextFields(form, data);
         setFieldsReadOnly(form);
 
-        form.flatten();
+        await form.flatten();
         const pdfBytes = await pdfDoc.save();
         return Buffer.from(pdfBytes, 'base64');
     } catch (err) {
