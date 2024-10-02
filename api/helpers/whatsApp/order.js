@@ -12,10 +12,8 @@ const productsData = {
         { "name": "Pilis", "type": "Poisson", "price": 1600 },
         { "name": "Samoussas", "type": "Viande", "price": 1200 },
         { "name": "Samoussas", "type": "Poisson", "price": 1300 },
-        { "name": "Nems", "type": "Viande", "price": 1400 },
-        { "name": "Nems", "type": "Poisson", "price": 1500 }
     ],
-    deliveryFee: 500,
+    deliveryFee: 1000,
     location: "Carrefour Rail Ngousso"
 };
 
@@ -39,7 +37,7 @@ const generateProductType = () => {
 
 const formatOrderSummary = (product, quantity, deliveryFee, totalPrice, deliveryMessage, note = "") => {
     return `📋 *Récapitulatif de votre commande :*\n\n` +
-        `Produit : ${product?.name}\n` +
+        `Produit : ${product?.name}-${product?.type}\n` +
         `Quantité : ${quantity}\n` +
         `Prix : ${product?.price * quantity} CFA\n` +
         `Frais de livraison : ${deliveryFee} CFA\n` +
@@ -51,7 +49,7 @@ const formatOrderSummary = (product, quantity, deliveryFee, totalPrice, delivery
 
 const requestPaiement = async (user, amount, mobileMoneyPhone,product,quantity) => 
     {
-        const paymentResponse = await makePayment(user, amount, mobileMoneyPhone,product,quantity);
+        const paymentResponse = await makePayment(user, amount, mobileMoneyPhone,product,quantity,orderData[user.phoneNumber].answers["Location"]);
 
       try {
         if (paymentResponse.status === "REQUEST_ACCEPTED") {
@@ -201,7 +199,7 @@ const steps = [
             const product = orderData[phoneNumber].answers["ChoiceProduct"];
             const quantity = orderData[phoneNumber].answers["QuantityProduct"];
             const deliveryFee = productsData.deliveryFee;
-            const totalPrice = orderData[phoneNumber].answers["Location"] === productsData.location ? product.price * quantity + deliveryFee : product.price * quantity ;
+            const totalPrice = orderData[phoneNumber].answers["Location"] === productsData.location ? product.price * quantity : product.price * quantity + deliveryFee ;
             const deliveryMessage = orderData[phoneNumber].answers["Location"];
             const note = orderData[phoneNumber].answers["Location"] === productsData.location ? `📝 *Notez bien* : Récupération au ${productsData.location}` : "📝 *Notez bien* : Un livreur prendra attache avec vous dans les minutes qui suivent après confirmation de votre commande.";
 
@@ -215,7 +213,7 @@ const steps = [
             const quantity = orderData[phoneNumber].answers["QuantityProduct"];
             const mobileMoneyPhone = orderData[phoneNumber].answers["mobileMoneyNumber"];
             const deliveryFee = productsData.deliveryFee;
-            const totalPrice = orderData[phoneNumber].answers["Location"] === productsData.location ? product.price * quantity + deliveryFee : product.price * quantity ;
+            const totalPrice = orderData[phoneNumber].answers["Location"] === productsData.location ? product.price * quantity : product.price * quantity + deliveryFee ;
             const user = orderData[phoneNumber].answers["user"];
             const result = await requestPaiement(user, totalPrice, mobileMoneyPhone,product,quantity);
             return result;

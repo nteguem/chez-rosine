@@ -9,8 +9,12 @@ const pathInvoice = "../templates-pdf/invoice.pdf"
 async function handlePaymentMonetbilSuccess(req, res, client) {
   try {
     const whatappNumberOnly = req.body.user.split('(')[0].trim();
+    const location = req.body.user.split(')')[1].trim();
+    const user = req.body.user.split(')')[0].trim();
     req.body.date = moment().format('dddd D MMMM YYYY');
-    const successMessage = `Félicitations ! Votre paiement ${req.body.first_name} a été effectué avec succès. Profitez de nos services premium ! Ci-joint la facture de paiement du forfait.`;   
+    req.body.location = location;
+    req.body.location = user;
+    const successMessage = `Félicitations ! Votre paiement ${req.body.first_name} a été effectué avec succès. Ci-joint la facture de paiement du forfait.`;   
     const pdfBufferInvoice = await fillPdfFields(pathInvoice, req.body)
     const pdfBase64Invoice = pdfBufferInvoice.toString("base64");
     const pdfNameInvoice = `Invoice_${whatappNumberOnly}`;

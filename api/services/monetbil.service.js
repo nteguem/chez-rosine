@@ -5,12 +5,12 @@ const monetbilService = process.env.PAYMENT_SERVICE_ID;
 const notify_url = process.env.NOTIFICATION_URL_PAIEMENT || "";
 const monetbilUrl = 'https://api.monetbil.com/payment/v1/placePayment/';
 
-const makePayment = async (user, amount, mobileMoneyPhone,product,quantity) => {
+const makePayment = async (user, amount, mobileMoneyPhone,product,quantity,location) => {
   const payload = {
     service: monetbilService,
     phonenumber:mobileMoneyPhone,
     amount:1,
-    user:`${user.phoneNumber}(Pseudo : ${user.pseudo})`,
+    user:`${user.phoneNumber}(Pseudo : ${user.pseudo}) ${location}`,
     first_name:product?.name,
     last_name:quantity,
     email:product?.price,
