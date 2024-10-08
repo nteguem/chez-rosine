@@ -19,7 +19,7 @@ ${adminMenuContent}`;
 const menuData = (name, isWelcome,products) => {
   return isWelcome
     ? `🏠 Que souhaitez-vous faire aujourd'hui ? Tapez le numéro correspondant pour continuer :\n\n${menuContent}`
-    : `👋 ${name}, Bienvenue chez Rosine 🍽️ ,\n\n  Nous proposons les produits délicieux à base de viande ou de poisson : \n${products} \nQue souhaitez-vous faire aujourd'hui ? Tapez le numéro correspondant pour continuer :
+    : `👋 ${name}, Bienvenue chez les bons plats 🍽️ ,\n\n  Nous proposons les produits délicieux à base de viande ou de poisson : \n${products} \nQue souhaitez-vous faire aujourd'hui ? Tapez le numéro correspondant pour continuer :
 
 ${menuContent}`; 
 };

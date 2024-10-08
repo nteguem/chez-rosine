@@ -89,9 +89,9 @@ async function update(phoneNumber, updatedData,client) {
   }
 }
 
-async function getOne(referralCode) {
+async function getOne(phoneNumber) {
   try {
-    const user = await User.findOne({ referralCode })
+    const user = await User.findOne({phoneNumber: phoneNumber })
     if (user) {
       return { success: true, user };
     } else {
@@ -102,9 +102,13 @@ async function getOne(referralCode) {
   }
 }
 
-async function list(role,client) {
+// Liste des utilisateurs avec pagination
+async function list(role, limit = 10, offset = 0, client) {
   try {
     const matchStage = role ? { role } : {};
+
+    // Comptez le total des utilisateurs qui correspondent aux critères
+    const totalCount = await User.countDocuments(matchStage);
 
     const users = await User.aggregate([
       { $match: matchStage },
@@ -128,20 +132,20 @@ async function list(role,client) {
           referralCode: 1,
           createdAt: 1,
           updatedAt: 1,
-          groups: { $map: { input: "$groups", as: "group", in: "$$group.name" } } // Map to get group names
+          groups: { $map: { input: "$groups", as: "group", in: "$$group.name" } } // Map pour obtenir les noms des groupes
         }
-      }
+      },
+      { $skip: offset }, // Sauter les utilisateurs selon l'offset
+      { $limit: limit }  // Limiter le nombre d'utilisateurs récupérés
     ]);
-    if (users.length > 0) {
-      return { success: true, total: users.length, users: users };
-    } else {
-      return { success: true, total: 0, users: [] };
-    }
+
+    return { success: true, total: totalCount, users };
   } catch (error) {
-    logger(client).error('Error list user:', error);
+    logger(client).error('Error listing users:', error);
     return { success: false, error: error.message };
   }
 }
+
 
 async function deleteUser(phoneNumber, client) {
   try {
@@ -174,5 +178,6 @@ module.exports = {
   login,
   list,
   update,
-  deleteUser
+  deleteUser,
+  getOne
 };
