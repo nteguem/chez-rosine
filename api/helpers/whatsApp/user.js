@@ -46,7 +46,7 @@ const UserCommander = async (user, msg, client) => {
               break;
             case "3":
               Steps[user.data.phoneNumber].currentMenu = "assistanceMenu";
-              replyToMessage(client, msg, "📋 Assistance : contactez-nous au 678 123 456.");
+              replyToMessage(client, msg, "📋 Assistance : contactez-nous au +237 6 79 78 64 60.");
               break;
             default:
               await replyInvalid(msg, client, user);
