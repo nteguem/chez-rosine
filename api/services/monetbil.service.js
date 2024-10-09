@@ -11,7 +11,7 @@ const makePayment = async (user, amount, mobileMoneyPhone,product,quantity,locat
     phonenumber:mobileMoneyPhone,
     amount:1,
     user:`${user.phoneNumber}(Pseudo : ${user.pseudo}) ${location}`,
-    first_name:product?.name,
+    first_name:`${product?.name} ${product?.variation?.name}`,
     last_name:quantity,
     email:product?.variation?.price,
     notify_url:notify_url

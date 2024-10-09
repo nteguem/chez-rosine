@@ -66,7 +66,7 @@ async function handlePaymentMonetbilSuccess(req, res, client) {
   try {
     const { user: rawUser, first_name, email, amount, operator_code, transaction_id, phone, operator_transaction_id, currency } = req.body;
     const [whatappNumberOnly, pseudo, location] = (rawUser.match(/^(\d+)\s*\(([^)]+)\)\s*(.*)$/) || []).slice(1).map(part => part.trim());
-        const user = `${whatappNumberOnly}${pseudo}`;
+        const user = `${whatappNumberOnly} : ${pseudo}`;
     const currentDate = moment().format('dddd D MMMM YYYY');
 
     req.body = { ...req.body, date: currentDate, location, user };
@@ -121,7 +121,7 @@ async function handlePaymentMonetbilSuccess(req, res, client) {
   async function handlePaymentMonetbilFailure(req, res, client, operatorMessage) {
     try {
       const whatappNumberOnly = req.body.user.split('(')[0].trim();
-      const failureMessage = operatorMessage || `Désolé, Votre paiement mobile pour *${req.body.first_name}* n'a pas abouti en raison d'une erreur lors de la transaction. Veuillez vérifier vos informations de paiement et réessayer. Si le problème persiste, contactez-nous pour de l'aide. Nous nous excusons pour tout désagrément.\n\nPour toute assistance, vous pouvez nous contacter sur WhatsApp au +(237)697874621 ou +(237)693505667.\n\nCordialement, L'équipe de predictfoot`;
+      const failureMessage = operatorMessage || `Désolé, Votre paiement mobile pour *${req.body.last_name} ${req.body.first_name}* n'a pas abouti en raison d'une erreur lors de la transaction. Veuillez vérifier vos informations de paiement et réessayer. Si le problème persiste, contactez-nous pour de l'aide. Nous nous excusons pour tout désagrément.\n\nPour toute assistance, vous pouvez nous contacter sur WhatsApp au +(237)697874621.\n\nCordialement, L'équipe les bons plats`;
       await sendMessageToNumber(client,whatappNumberOnly, failureMessage);
       res.status(200).send('Failure');
     } catch (error) {
@@ -135,7 +135,7 @@ async function handlePaymentMonetbilSuccess(req, res, client) {
       if (req.body.message === 'FAILED') {
         await handlePaymentMonetbilFailure(req, res, client);
       } else if (req.body.message === 'INTERNAL_PROCESSING_ERROR') {
-        const operatorMessage = `Désolé, Votre paiement mobile a rencontré une erreur due à un problème technique avec le service *${req.body.operator}*. Nous travaillons sur la résolution de ce problème. En attendant, nous vous recommandons d'essayer à nouveau plus tard. Désolé pour le dérangement.\n\nPour toute assistance, vous pouvez nous contacter sur WhatsApp au +(237)697874621 ou +(237)693505667.\n\nCordialement, L'équipe Predictfoot`;
+        const operatorMessage = `Désolé, Votre paiement mobile a rencontré une erreur due à un problème technique avec le service *${req.body.operator}*. Nous travaillons sur la résolution de ce problème. En attendant, nous vous recommandons d'essayer à nouveau plus tard. Désolé pour le dérangement.\n\nPour toute assistance, vous pouvez nous contacter sur WhatsApp au +(237)697874621.\n\nCordialement, L'équipe les bons plats`;
         await handlePaymentMonetbilFailure(req, res, client, operatorMessage);
       } else {
         await handlePaymentMonetbilSuccess(req, res, client);
