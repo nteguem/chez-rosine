@@ -82,7 +82,7 @@ async function handlePaymentMonetbilSuccess(req, res, client) {
           select: 'name price',
         }),
     ]);
-    console.log("dataCustomer"),dataCustomer
+    console.log("dataCustomer",dataCustomer)
     // Préparation des données de la commande
     const orderData = {
       products: [product.id],
