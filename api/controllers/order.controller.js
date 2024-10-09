@@ -65,6 +65,7 @@ const updateDeliveryStatus = async (req, res, client) => {
 async function handlePaymentMonetbilSuccess(req, res, client) {
   try {
     const { user: rawUser, first_name, email, amount, operator_code, transaction_id, phone, operator_transaction_id, currency } = req.body;
+    console.log("rawUser",rawUser)
     const [whatappNumberOnly, location] = rawUser.split(/[()]/).map(part => part.trim());
     const user = `${whatappNumberOnly})`;
     const currentDate = moment().format('dddd D MMMM YYYY');
