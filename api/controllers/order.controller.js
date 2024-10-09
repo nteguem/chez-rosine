@@ -65,9 +65,8 @@ const updateDeliveryStatus = async (req, res, client) => {
 async function handlePaymentMonetbilSuccess(req, res, client) {
   try {
     const { user: rawUser, first_name, email, amount, operator_code, transaction_id, phone, operator_transaction_id, currency } = req.body;
-    console.log("rawUser",rawUser)
-    const [whatappNumberOnly, location] = rawUser.split(/[()]/).map(part => part.trim());
-    const user = `${whatappNumberOnly})`;
+    const [whatappNumberOnly, pseudo, location] = (rawUser.match(/^(\d+)\s*\(([^)]+)\)\s*(.*)$/) || []).slice(1).map(part => part.trim());
+        const user = `${whatappNumberOnly}${pseudo}`;
     const currentDate = moment().format('dddd D MMMM YYYY');
 
     req.body = { ...req.body, date: currentDate, location, user };
@@ -83,7 +82,6 @@ async function handlePaymentMonetbilSuccess(req, res, client) {
           select: 'name price',
         }),
     ]);
-    console.log("product",product)
     // Préparation des données de la commande
     const orderData = {
       products: [product.id],
