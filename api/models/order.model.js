@@ -17,6 +17,8 @@ const orderSchema = new mongoose.Schema({
     required: true 
   }, 
   transactionId: { type: String, required: true }, 
+  operatorTransactionId:{ type: String, required: true }, 
+  currency:{ type: String, required: true }, 
   mobileNumber: { type: String, required: true }, 
   deliveryTime: { type: Date, required: false }, 
   deliveryStatus: {

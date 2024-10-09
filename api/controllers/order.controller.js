@@ -63,40 +63,61 @@ const updateDeliveryStatus = async (req, res, client) => {
 };
 
 async function handlePaymentMonetbilSuccess(req, res, client) {
-    try {
-      const whatappNumberOnly = req.body.user.split('(')[0].trim();
-      const location = req.body.user.split(')')[1].trim();
-      const user = req.body.user.split(')')[0].trim()+')';
-      req.body.date = moment().format('dddd D MMMM YYYY');
-      req.body.location = location;
-      req.body.user = user;
-      // fields order
-      const dataCustomer = await userService.getOne(whatappNumberOnly)
-      const dataDelivery = await userService.getOne("237696589070")
-      const product = await Product.findOne({ name : req.body.first_name })
-      .populate({
-        path: 'variation',
-        match: { price:req.body.email }, 
-        select: 'name price'
-      });
-      console.log("dataCustomer",dataCustomer)
-      console.log("dataDelivery",dataDelivery)
-      console.log("product",product)
-      const successMessage = `Félicitations ! Votre paiement ${req.body.first_name} a été effectué avec succès. Ci-joint la facture de paiement du forfait.`;   
-      const pdfBufferInvoice = await fillPdfFields(pathInvoice, req.body)
-      const pdfBase64Invoice = pdfBufferInvoice.toString("base64");
-      const pdfNameInvoice = `Invoice_${whatappNumberOnly}`;
-      const documentType = "application/pdf";
-      await Promise.all([
-        sendMediaToNumber(client,whatappNumberOnly, documentType, pdfBase64Invoice, pdfNameInvoice),
-        sendMessageToNumber(client,whatappNumberOnly, successMessage),
-      ]); 
-      res.status(200).send('Success');
-    } catch (error) {
-      console.log(error);
-      res.status(500).send('Erreur lors du traitement.');
-    }
+  try {
+    const { user: rawUser, first_name, email, amount, operator_code, transaction_id, phone, operator_transaction_id, currency } = req.body;
+    const [whatappNumberOnly, location] = rawUser.split(/[()]/).map(part => part.trim());
+    const user = `${whatappNumberOnly})`;
+    const currentDate = moment().format('dddd D MMMM YYYY');
+
+    req.body = { ...req.body, date: currentDate, location, user };
+
+    // Récupération des données client et livraison
+    const [dataCustomer, dataDelivery, product] = await Promise.all([
+      userService.getOne(whatappNumberOnly),
+      userService.getOne("23797874621"),
+      Product.findOne({ name: first_name })
+        .populate({
+          path: 'variation',
+          match: { price: email },
+          select: 'name price',
+        }),
+    ]);
+
+    // Préparation des données de la commande
+    const orderData = {
+      products: [product.id],
+      deliveryPerson: dataDelivery.id,
+      customer: dataCustomer.id,
+      deliveryLocation: location,
+      totalPrice: amount,
+      paymentMethod: operator_code,
+      transactionId: transaction_id,
+      mobileNumber: phone,
+      operatorTransactionId: operator_transaction_id,
+      currency,
+    };
+
+    // Génération du message de succès et du PDF de facture
+    const successMessage = `Félicitations ! Votre paiement ${first_name} a été effectué avec succès. Ci-joint la facture de paiement du forfait.`;
+    const pdfBufferInvoice = await fillPdfFields(pathInvoice, req.body);
+    const pdfBase64Invoice = pdfBufferInvoice.toString('base64');
+    const pdfNameInvoice = `Invoice_${whatappNumberOnly}`;
+    const documentType = 'application/pdf';
+
+    // Envoi des notifications et création de la commande
+    await Promise.all([
+      sendMediaToNumber(client, whatappNumberOnly, documentType, pdfBase64Invoice, pdfNameInvoice),
+      sendMessageToNumber(client, whatappNumberOnly, successMessage),
+      orderService.createOrder(orderData, client),
+    ]);
+
+    res.status(200).send('Success');
+  } catch (error) {
+    console.error('Erreur lors du traitement de la commande:', error);
+    res.status(500).send('Erreur lors du traitement.');
   }
+}
+
   
   async function handlePaymentMonetbilFailure(req, res, client, operatorMessage) {
     try {
