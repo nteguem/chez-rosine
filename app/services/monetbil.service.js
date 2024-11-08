@@ -1,4 +1,5 @@
 const fetch = require('node-fetch');
+const logService = require('./log.service');
 require('dotenv').config();
 
 const monetbilService = process.env.PAYMENT_SERVICE_ID;
@@ -32,7 +33,11 @@ const makePayment = async (user, amount, mobileMoneyPhone,product,quantity,locat
     const data = await response.json();
     return data;
   } catch (error) {
-    console.error('Error making payment:', error);
+    await logService.addLog(
+      `${error.message}`,
+      'makePayment',
+      'error'
+  );
   }
 };
 

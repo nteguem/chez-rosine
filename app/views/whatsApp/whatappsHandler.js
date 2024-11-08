@@ -2,7 +2,8 @@ const { Client, LocalAuth } = require('whatsapp-web.js');
 const { save } = require('../../services/user.service');
 const { UserCommander } = require("./user");
 const { AdminCommander } = require("./admin")
-const logger = require('../logger');
+const logService = require('../../services/log.service');
+
 const initializeWhatsAppClient = (io) => {
   const puppeteerConfig = {
     args: ['--no-sandbox'],
@@ -15,7 +16,7 @@ const initializeWhatsAppClient = (io) => {
   const client = new Client({
     puppeteer: puppeteerConfig,
     authStrategy: new LocalAuth({
-      dataPath: '../sessions/chez-rosine',
+      dataPath: '../sessions/les-bons-plats',
     }),
   });
 
@@ -57,13 +58,15 @@ const handleIncomingMessages = (client) => {
         await AdminCommander(response, msg, client)
       }
       else {
-        logger(client).error('Erreur rencontrée handleIncomingMessages', response.error);
         msg.reply(response.message)
       }
     }
     catch (err) {
-      logger(client).error('Erreur rencontrée handleIncomingMessages', err);
-      msg.reply("We're sorry, but an internal server error has occurred. Our team has been alerted and is working to resolve the issue. Please try again later.")
+      await logService.addLog(
+        `${error.message}`,
+        'handleIncomingMessages',
+        'error'
+      );
     }
   });
 };

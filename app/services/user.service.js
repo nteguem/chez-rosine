@@ -2,9 +2,9 @@ require("dotenv").config();
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require("../models/user.model");
-const logger = require("../helpers/logger")
+const logService = require('./log.service');
 
-async function save(phoneNumber, contactName,client) {
+async function save(phoneNumber, contactName, client) {
   try {
     const user = await User.findOne({ phoneNumber: phoneNumber });
     if (!user) {
@@ -17,7 +17,7 @@ async function save(phoneNumber, contactName,client) {
 
       const user = await newUser.save();
       return {
-        exist: false, 
+        exist: false,
         data: user,
         message: "User created successfully.",
       };
@@ -32,7 +32,11 @@ async function save(phoneNumber, contactName,client) {
       }
     }
   } catch (error) {
-    logger(client).error('Error create user:', error);
+    await logService.addLog(
+      `${error.message}`,
+      'save',
+      'error'
+    );
     return {
       error: error,
       message: "We're sorry, but an internal server error has occurred. Our team has been alerted and is working to resolve the issue. Please try again later.",
@@ -40,7 +44,7 @@ async function save(phoneNumber, contactName,client) {
   }
 }
 
-async function login(phoneNumber, password,client) {
+async function login(phoneNumber, password, client) {
   try {
     const user = await User.findOne({ phoneNumber });
     if (!user) {
@@ -58,13 +62,17 @@ async function login(phoneNumber, password,client) {
     const token = jwt.sign({ userId: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '24h' });
     return { success: true, token, user };
   } catch (error) {
-    logger(client).error('Error login user:', error);
+    await logService.addLog(
+      `${error.message}`,
+      'login',
+      'error'
+    );
     return { success: false, error: error.message };
   }
 }
 
 
-async function update(phoneNumber, updatedData,client) { 
+async function update(phoneNumber, updatedData, client) {
   try {
     const updatedUser = await User.findOneAndUpdate(
       { phoneNumber: phoneNumber },
@@ -81,7 +89,11 @@ async function update(phoneNumber, updatedData,client) {
       return { success: false, message: "Utilisateur non trouvé" };
     }
   } catch (error) {
-    logger(client).error('Error update user:', error);
+    await logService.addLog(
+      `${error.message}`,
+      'update',
+      'error'
+    );
     return {
       success: false,
       message: "Erreur lors de la mise à jour de l'utilisateur",
@@ -91,19 +103,24 @@ async function update(phoneNumber, updatedData,client) {
 
 async function getOne(phoneNumber) {
   try {
-    const user = await User.findOne({phoneNumber: phoneNumber })
+    const user = await User.findOne({ phoneNumber: phoneNumber })
     if (user) {
       return { success: true, user };
     } else {
       return { success: false, message: "User not found" };
     }
   } catch (error) {
+    await logService.addLog(
+      `${error.message}`,
+      'getOne',
+      'error'
+    );
     return { success: false, error: error.message };
   }
 }
 
 // Liste des utilisateurs avec pagination
-async function list(role, limit = 10, offset = 0, client) {
+async function list(role, limit = 10, offset = 0) {
   try {
     const matchStage = role ? { role } : {};
 
@@ -141,7 +158,11 @@ async function list(role, limit = 10, offset = 0, client) {
 
     return { success: true, total: totalCount, users };
   } catch (error) {
-    logger(client).error('Error listing users:', error);
+    await logService.addLog(
+      `${error.message}`,
+      'list',
+      'error'
+    );
     return { success: false, error: error.message };
   }
 }
@@ -164,7 +185,11 @@ async function deleteUser(phoneNumber, client) {
       };
     }
   } catch (error) {
-    logger(client).error('Error delete user:', error);
+    await logService.addLog(
+      `${error.message}`,
+      'deleteUser',
+      'error'
+    );
     return {
       success: false,
       message: "An error occurred while deleting the user",

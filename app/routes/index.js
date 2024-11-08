@@ -5,11 +5,12 @@ const { setupUserRoutes } = require('./user.route');
 const {setupProductRoutes} = require('./product.route');
 const {setupOrderRoutes} = require("./order.route");
 const {setupVariationRoutes} = require('./variation.route');
-const {setupCategoryRoutes} = require("./category.route")
+const {setupCategoryRoutes} = require("./category.route");
+const {setupLogRoutes} = require("./log.route")
 /* GET home page. */
 // Define a route for the home page ('/') that renders the 'index' template with the title 'Bibemella'.
 router.get('/', function(req, res, next) {
-  res.json({ title: 'chatbot Chez Rosine' });
+  res.json({ title: 'chatbot Les bons plats' });
 });
 
 /**
@@ -23,6 +24,7 @@ const setupAppRoutes = (client) => {
   setupOrderRoutes(app,client);
   setupVariationRoutes(app,client);
   setupCategoryRoutes(app,client);
+  setupLogRoutes(app);
   return app;
 }
 

@@ -1,10 +1,11 @@
 const { sendMessageToNumber, sendMediaToNumber, replyToMessage } = require('./whatsappMessaging');
-const logger = require("../logger");
 const moment = require('moment');
 const { makePayment } = require("../../services/monetbil.service");
-const {getVariations} = require("../../services/variation.service");
-const {getCategoryByName} = require('../../services/category.service');
-const {listProducts} = require('../../services/product.service');
+const { getVariations } = require("../../services/variation.service");
+const { getCategoryByName } = require('../../services/category.service');
+const { listProducts } = require('../../services/product.service');
+const logService = require('../../services/log.service');
+
 // Objet pour stocker l'étape actuelle et les réponses de l'utilisateur
 let orderData = {};
 let listVariations;
@@ -14,8 +15,8 @@ const productsData = {
 };
 
 const generateProductList = async () => {
-    const {category}  = await getCategoryByName("mignardises");
-    const {products} = await listProducts(category.id)
+    const { category } = await getCategoryByName("mignardises");
+    const { products } = await listProducts(category.id)
     productsData.products = (products);
     let productList = "📋 Choisissez un produit :\n\n";
     const uniqueProducts = [...new Set(productsData?.products.map(product => product.name))];
@@ -26,8 +27,8 @@ const generateProductList = async () => {
 };
 
 const generateProductType = async () => {
-    const {category}  = await getCategoryByName("mignardises");
-    const {variations} = await getVariations(category.id);
+    const { category } = await getCategoryByName("mignardises");
+    const { variations } = await getVariations(category.id);
     listVariations = (variations);
     const uniqueTypes = [...new Set(variations.map(p => p.name))];
     let typeList = "📋 Choisissez le type :\n\n";
@@ -39,31 +40,36 @@ const generateProductType = async () => {
 
 const formatOrderSummary = (product, quantity, deliveryFee, totalPrice, deliveryMessage, note = "") => {
     return `📋 *Récapitulatif de votre commande :*\n\n` +
-        `Produit : ${product?.name}-${product?.variation.name}\n` +
+        `Produit : ${product?.name}-${product?.variation.name} \n` +
+        `Prix unitaire : ${product?.variation.price} FCFA\n` +
         `Quantité : ${quantity}\n` +
-        `Prix : ${product?.variation?.price * quantity} CFA\n` +
-        `Frais de livraison : ${deliveryFee} CFA\n` +
-        `Total à payer : ${totalPrice} CFA\n` +
+        `Prix : ${product?.variation?.price * quantity} FCFA\n` +
+        `Frais de livraison : ${deliveryFee} FCFA\n` +
+        `Total à payer : ${totalPrice} FCFA\n` +
         `Lieu : ${deliveryMessage}\n\n` +
         `Souhaitez-vous procéder au paiement ? Tapez Oui pour continuer ou Non pour annuler.\n\n` +
-        `${note}`;
+        `${note}`; 
 }
 
-const requestPaiement = async (user, amount, mobileMoneyPhone,product,quantity) => 
-    {
-        const paymentResponse = await makePayment(user, amount, mobileMoneyPhone,product,quantity,orderData[user.phoneNumber].answers["Location"]);
+const requestPaiement = async (user, amount, mobileMoneyPhone, product, quantity) => {
+    const paymentResponse = await makePayment(user, amount, mobileMoneyPhone, product, quantity, orderData[user.phoneNumber].answers["Location"]);
 
-      try {
+    try {
         if (paymentResponse.status === "REQUEST_ACCEPTED") {
             return `Paiement en cours. Utilisez le code USSD ${paymentResponse.channel_ussd} pour compléter le paiement via ${paymentResponse.channel_name}.`;
-          } else {
+        } else {
             return `Erreur lors de l'initiation du paiement : ${paymentResponse.message}`;
-          }
-      }
-      catch (error) {
+        }
+    }
+    catch (error) {
+        await logService.addLog(
+            `${error.message}`,
+            'requestPaiement',
+            'error'
+        );
         return `Erreur lors de l'initiation du paiement`;
     }
-    }
+}
 
 
 // Fonction pour gérer les commandes de l'utilisateur
@@ -84,7 +90,7 @@ const orderCommander = async (user, msg, client) => {
         } else {
             switch (orderData[phoneNumber].step) {
                 case 1:
-                     //Logique  choix du produit
+                    //Logique  choix du produit
                     const uniqueProducts = [...new Set(productsData.products.map(product => product.name))];
                     const productIndex = parseInt(userInput) - 1;
                     if (productIndex >= 0 && productIndex < uniqueProducts.length) {
@@ -97,7 +103,7 @@ const orderCommander = async (user, msg, client) => {
                     break;
 
                 case 2:
-                     //Logique  choix du type de produit
+                    //Logique  choix du type de produit
                     const variationIndex = parseInt(userInput) - 1;
                     if (variationIndex >= 0 && variationIndex < listVariations.length) {
                         const selectedVariation = listVariations[variationIndex];
@@ -117,7 +123,7 @@ const orderCommander = async (user, msg, client) => {
                     if (!isValidNumber) {
                         await replyToMessage(client, msg, "Veuillez entrer un nombre valide.");
                     } else {
-                        const quantity = parseInt(userInput, 10); 
+                        const quantity = parseInt(userInput, 10);
                         if (quantity >= 10) {
                             orderData[phoneNumber].answers["QuantityProduct"] = quantity;
                             orderData[phoneNumber].step++;
@@ -143,9 +149,13 @@ const orderCommander = async (user, msg, client) => {
 
                 case 4.1:
                     // logique Réception de l'adresse de livraison
-                    orderData[phoneNumber].answers["Location"] = userInput;
-                    orderData[phoneNumber].step = Math.floor(orderData[phoneNumber].step) + 1;
-                    break;
+                    if (userInput.length <= 60) {
+                        orderData[phoneNumber].answers["Location"] = userInput;
+                        orderData[phoneNumber].step = Math.floor(orderData[phoneNumber].step) + 1;
+                    } else {
+                        replyToMessage(client, msg, "Veuillez saisir un nom de quartier valide .");
+                    }
+                    break; 
 
                 case 5:
                     // Logique pour l'étape recapitulatif
@@ -162,19 +172,19 @@ const orderCommander = async (user, msg, client) => {
                 case 6:
                     const mobileMoneyNumber = userInput.trim();
                     if (!/^6[0-9]{8}$/.test(mobileMoneyNumber)) {
-                     msg.reply("Numéro de téléphone mobile money invalide. Veuillez saisir un numéro valide.");
+                        msg.reply("Numéro de téléphone mobile money invalide. Veuillez saisir un numéro valide.");
                     }
-                    else{
+                    else {
                         orderData[phoneNumber].answers["mobileMoneyNumber"] = userInput;
-                        orderData[phoneNumber].step++;   
+                        orderData[phoneNumber].step++;
                     }
                     break;
                 case 7:
                     // Logique pour l'étape finale
                     (orderData[phoneNumber]) = { step: 1, answers: {} };
-                    
+
                     break;
-                default: 
+                default:
                     replyToMessage(client, msg, "Étape inconnue.");
                     break;
             }
@@ -182,13 +192,17 @@ const orderCommander = async (user, msg, client) => {
         await sendStepMessage(client, phoneNumber, orderData[phoneNumber].step);
 
     } catch (error) {
-        logger.error("Erreur lors du traitement de la commande", error);
+        await logService.addLog(
+            `${error.message}`,
+            'orderCommander',
+            'error'
+        );
     }
 };
 
 const steps = [
-    { message:   async () => { return await generateProductList();} },
-    { message:   async () => { return await generateProductType();} },
+    { message: async () => { return await generateProductList(); } },
+    { message: async () => { return await generateProductType(); } },
     { message: `Combien en voulez-vous ? (Minimum 10)` },
     {
         message: `Livraison ou retrait ?\n\n1. *Livraison* - Tapez 1\n2. *Retrait en point de vente* - Tapez 2.`,
@@ -203,7 +217,7 @@ const steps = [
             const product = orderData[phoneNumber].answers["ChoiceProduct"];
             const quantity = orderData[phoneNumber].answers["QuantityProduct"];
             const deliveryFee = productsData.deliveryFee;
-            const totalPrice = orderData[phoneNumber].answers["Location"] === productsData.location ? product.variation.price * quantity : product?.variation.price * quantity + deliveryFee ;
+            const totalPrice = orderData[phoneNumber].answers["Location"] === productsData.location ? product.variation.price * quantity : product?.variation.price * quantity + deliveryFee;
             const deliveryMessage = orderData[phoneNumber].answers["Location"];
             const note = orderData[phoneNumber].answers["Location"] === productsData.location ? `📝 *Notez bien* : Récupération au ${productsData.location}` : "📝 *Notez bien* : Un livreur prendra attache avec vous dans les minutes qui suivent après confirmation de votre commande.";
 
@@ -217,9 +231,9 @@ const steps = [
             const quantity = orderData[phoneNumber].answers["QuantityProduct"];
             const mobileMoneyPhone = orderData[phoneNumber].answers["mobileMoneyNumber"];
             const deliveryFee = productsData.deliveryFee;
-            const totalPrice = orderData[phoneNumber].answers["Location"] === productsData.location ? product.price * quantity : product.price * quantity + deliveryFee ;
+            const totalPrice = orderData[phoneNumber].answers["Location"] === productsData.location ? product.price * quantity : product.price * quantity + deliveryFee;
             const user = orderData[phoneNumber].answers["user"];
-            const result = await requestPaiement(user, totalPrice, mobileMoneyPhone,product,quantity);
+            const result = await requestPaiement(user, totalPrice, mobileMoneyPhone, product, quantity);
             return result;
         }
     },

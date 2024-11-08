@@ -1,5 +1,7 @@
-const { PDFDocument} = require('pdf-lib');
+const { PDFDocument } = require('pdf-lib');
 const { readFile } = require('fs/promises');
+const logService = require('./log.service');
+
 const path = require('path');
 
 async function fillPdfFields(inputPath, data) {
@@ -14,7 +16,11 @@ async function fillPdfFields(inputPath, data) {
         const pdfBytes = await pdfDoc.save();
         return Buffer.from(pdfBytes, 'base64');
     } catch (err) {
-        console.log('An error occurred:', err);
+        await logService.addLog(
+            `${err.message}`,
+            'fillPdfFields',
+            'error'
+        );
     }
 }
 
@@ -29,7 +35,11 @@ async function fillTextFields(form, data) {
                 console.log(`The field "${fieldName}" does not exist or is not a text field.`);
             }
         } catch (error) {
-            console.log(`An error occurred while processing the field "${fieldName}":`, error.message);
+            await logService.addLog(
+                `${error.message}`,
+                'fillTextFields',
+                'error'
+            );
         }
     }
 }

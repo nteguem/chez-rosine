@@ -11,13 +11,8 @@ const setupOrderRoutes = (app, client) => {
     app.use("/order", router);
 
     // Récupérer les commandes d'un client spécifique
-    router.get('/customer/:customerId', (req, res) => {
-        orderHandler.getOrdersByCustomer(req, res, client);
-    });
-
-    // Récupérer les commandes d'un livreur spécifique
-    router.get('/delivery/:deliveryPersonId', (req, res) => {
-        orderHandler.getOrdersByDeliveryPerson(req, res, client);
+    router.get('/user', (req, res) => {
+        orderHandler.getOrdersByUser(req, res, client);
     });
 
     // Créer une nouvelle commande

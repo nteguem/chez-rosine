@@ -1,5 +1,5 @@
 const Category = require("../models/category.model");
-const logger = require("../helpers/logger");
+const logService = require('./log.service');
 
 // Création d'une catégorie
 async function createCategory(categoryData, client) {
@@ -8,7 +8,11 @@ async function createCategory(categoryData, client) {
     const category = await newCategory.save();
     return { success: true, category, message: "Category created successfully." };
   } catch (error) {
-    logger(client).error('Error creating category:', error);
+    await logService.addLog(
+      `${error.message}`,
+      'createCategory',
+      'error'
+    );
     return {
       success: false,
       message: "An error occurred while creating the category.",
@@ -31,7 +35,11 @@ async function updateCategory(categoryId, updatedData, client) {
       return { success: false, message: "Category not found." };
     }
   } catch (error) {
-    logger(client).error('Error updating category:', error);
+    await logService.addLog(
+      `${error.message}`,
+      'updateCategory',
+      'error'
+    );
     return {
       success: false,
       message: "An error occurred while updating the category.",
@@ -50,7 +58,11 @@ async function deleteCategory(categoryId, client) {
       return { success: false, message: "Category not found." };
     }
   } catch (error) {
-    logger(client).error('Error deleting category:', error);
+    await logService.addLog(
+      `${error.message}`,
+      'deleteCategory',
+      'error'
+    );
     return {
       success: false,
       message: "An error occurred while deleting the category.",
@@ -81,7 +93,11 @@ async function listCategories(limit = 10, offset = 0, client) {
       categories,
     };
   } catch (error) {
-    logger(client).error('Error listing categories:', error);
+    await logService.addLog(
+      `${error.message}`,
+      'listCategories',
+      'error'
+    );
     return {
       success: false,
       message: "An error occurred while fetching the category list.",
@@ -100,7 +116,11 @@ async function getCategoryById(categoryId, client) {
       return { success: false, message: "Category not found." };
     }
   } catch (error) {
-    logger(client).error('Error retrieving category:', error);
+    await logService.addLog(
+      `${error.message}`,
+      'getCategoryById',
+      'error'
+    );
     return {
       success: false,
       message: "An error occurred while retrieving the category.",
@@ -119,6 +139,11 @@ async function getCategoryByName(categoryName) {
       return { success: false, message: "Category not found." };
     }
   } catch (error) {
+    await logService.addLog(
+      `${error.message}`,
+      'getCategoryByName',
+      'error'
+    );
     return {
       success: false,
       message: "An error occurred while retrieving the category by name.",

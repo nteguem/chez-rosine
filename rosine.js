@@ -1,14 +1,14 @@
 require('dotenv').config();
 const express = require('express');
-const appRoutes = require("./api/routes/index");
+const appRoutes = require("./app/routes/index");
 const bodyParser = require("body-parser");
 const cors = require('cors');
 const createError = require("http-errors");
 const cookieParser = require("cookie-parser");
-const dbConnect = require('./api/config/dbConnect');
+const dbConnect = require('./app/config/dbConnect');
 const http = require('http');
 const socketIo = require('socket.io');
-const { initializeWhatsAppClient, handleIncomingMessages } = require('./api/helpers/whatsApp/whatappsHandler');
+const { initializeWhatsAppClient, handleIncomingMessages } = require('./app/views/whatsApp/whatappsHandler');
 
 // // Connection to MongoDB
 dbConnect("DEV"); 
@@ -60,10 +60,10 @@ io.on('connection', (socket) => {
   });
 
   socket.on('disconnect', () => {
-    console.log('Client disconnected');
+    console.log('Client disconnected'); 
   });
-
-  socket.on('error', (error) => {
+ 
+  socket.on('error', (error) => { 
     console.error('WebSocket error:', error);
   });
   if (client.hasOwnProperty('info')) {
