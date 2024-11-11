@@ -172,7 +172,7 @@ const orderCommander = async (user, msg, client) => {
                 case 6:
                     const mobileMoneyNumber = userInput.trim();
                     if (!/^6[0-9]{8}$/.test(mobileMoneyNumber)) {
-                        msg.reply("Numéro de téléphone mobile money invalide. Veuillez saisir un numéro valide.");
+                        msg.reply("Numéro de téléphone Mobile Money invalide. Veuillez saisir à nouveau un numéro MTN ou Orange.");
                     }
                     else {
                         orderData[phoneNumber].answers["mobileMoneyNumber"] = userInput;
@@ -224,7 +224,7 @@ const steps = [
             return formatOrderSummary(product, quantity, deliveryFee, totalPrice, deliveryMessage, note);
         }
     },
-    { message: `Fournissez votre numéro de Mobile Money pour le paiement.` },
+    { message: `Fournissez votre numéro de Mobile money ou Orange money pour le paiement.` },
     {
         message: async (phoneNumber) => {
             const product = orderData[phoneNumber].answers["ChoiceProduct"];

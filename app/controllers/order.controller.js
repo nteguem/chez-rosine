@@ -65,7 +65,6 @@ async function handlePaymentMonetbilSuccess(req, res, client) {
       ProductService.ProductGetOne({ name: first_name }),
     ]);
 
-    console.log("product",product)
     // Préparation des données de la commande
     const orderData = {
       products: [product.id],
@@ -81,7 +80,7 @@ async function handlePaymentMonetbilSuccess(req, res, client) {
     };
 
     // Preparation de la facture pdf du client
-    const successMessage = `Félicitations ! Votre paiement ${first_name} a été effectué avec succès. Ci-joint la facture de paiement du forfait.`;
+    const successMessage = `Félicitations ! Votre paiement ${first_name} a été effectué avec succès. Ci-joint la facture de paiement.`;
     const pdfBufferInvoice = await fillPdfFields(pathInvoice, req.body);
     const pdfBase64Invoice = pdfBufferInvoice.toString('base64');
     const pdfNameInvoice = `Invoice_${whatappNumberOnly}`;
@@ -89,8 +88,7 @@ async function handlePaymentMonetbilSuccess(req, res, client) {
 
     // Envoi de la notification , generation de facture client et création de la commande
     await Promise.all([
-      sendMediaToNumber(client, whatappNumberOnly, documentType, pdfBase64Invoice, pdfNameInvoice),
-      sendMessageToNumber(client, whatappNumberOnly, successMessage),
+      sendMediaToNumber(client, whatappNumberOnly, documentType, pdfBase64Invoice, pdfNameInvoice,successMessage),
       orderService.createOrder(orderData, client),
     ]);
 
