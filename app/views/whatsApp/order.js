@@ -181,7 +181,7 @@ const orderCommander = async (user, msg, client) => {
                     break;
                 case 7:
                     // Logique pour l'étape finale
-                    (orderData[phoneNumber]) = { step: 1, answers: {} };
+                    Object.assign(orderData[phoneNumber], { step: 1, answers: {} });
 
                     break;
                 default:

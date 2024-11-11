@@ -4,7 +4,7 @@ require('dotenv').config();
 
 const monetbilService = process.env.PAYMENT_SERVICE_ID;
 const notify_url = process.env.NOTIFICATION_URL_PAIEMENT || "";
-const monetbilUrl = 'https://api.monetbil.com/payment/v1/placePayment/';
+const paiement_url = process.env.PAYMENT_API_ENDPOINT ;
 
 const makePayment = async (user, amount, mobileMoneyPhone,product,quantity,location) => {
   const payload = {
@@ -19,7 +19,8 @@ const makePayment = async (user, amount, mobileMoneyPhone,product,quantity,locat
   };
 
   try {
-    const response = await fetch(monetbilUrl, {
+    console.log("payload",payload)
+    const response = await fetch(paiement_url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

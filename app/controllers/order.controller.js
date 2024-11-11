@@ -84,14 +84,14 @@ async function handlePaymentMonetbilSuccess(req, res, client) {
       currency,
     };
 
-    // Génération du message de succès et du PDF de facture
+    // Preparation de la facture pdf du client
     const successMessage = `Félicitations ! Votre paiement ${first_name} a été effectué avec succès. Ci-joint la facture de paiement du forfait.`;
     const pdfBufferInvoice = await fillPdfFields(pathInvoice, req.body);
     const pdfBase64Invoice = pdfBufferInvoice.toString('base64');
     const pdfNameInvoice = `Invoice_${whatappNumberOnly}`;
     const documentType = 'application/pdf';
 
-    // Envoi de la notification au client et création de la commande
+    // Envoi de la notification , generation de facture client et création de la commande
     await Promise.all([
       sendMediaToNumber(client, whatappNumberOnly, documentType, pdfBase64Invoice, pdfNameInvoice),
       sendMessageToNumber(client, whatappNumberOnly, successMessage),
@@ -106,7 +106,11 @@ async function handlePaymentMonetbilSuccess(req, res, client) {
       await sendMediaToNumber(client, admin.phoneNumber, documentType, pdfBase64Invoice, pdfNameInvoice);
       await sendMessageToNumber(client, admin.phoneNumber, adminMessage);
     }
-
+    await logService.addLog(
+      `${req.body}`,
+      'reussi paiement',
+      'error'
+    );
     res.status(200).send('Success');
   } catch (error) {
     await logService.addLog(
