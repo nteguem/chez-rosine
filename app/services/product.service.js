@@ -114,9 +114,9 @@ async function listProducts(categoryId = null, limit = 10, offset = 0) {
 
 
 // Récupérer un produit par ID
-async function getProductById(productId, client) {
+async function ProductGetOne(query) {
   try {
-    const product = await Product.findById(productId).populate('category').populate('variation');
+    const product = await Product.findOne(query).populate('category').populate('variation');
     if (product) {
       return { success: true, product };
     } else {
@@ -125,7 +125,7 @@ async function getProductById(productId, client) {
   } catch (error) {
     await logService.addLog(
       `${error.message}`,
-      'getProductById',
+      'ProductGetOne',
       'error'
     );
     return {
@@ -136,10 +136,11 @@ async function getProductById(productId, client) {
   }
 }
 
+
 module.exports = {
   createProduct,
   updateProduct,
   deleteProduct,
   listProducts,
-  getProductById,
+  ProductGetOne,
 };

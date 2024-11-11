@@ -2,7 +2,7 @@ const orderService = require('../services/order.service');
 const userService = require("../services/user.service")
 const ResponseService = require('../services/response.service');
 const logService = require('../services/log.service');
-const Product = require("../models/product.model");
+const ProductService = require("../services/product.service")
 const { sendMessageToNumber, sendMediaToNumber } = require('../views/whatsApp/whatsappMessaging');
 const { fillPdfFields } = require("../services/fillFormPdf.service");
 const moment = require("moment");
@@ -62,17 +62,10 @@ async function handlePaymentMonetbilSuccess(req, res, client) {
     // Récupération des données client et livraison
     const [dataCustomer, product] = await Promise.all([
       userService.getOne(whatappNumberOnly),
-      Product.findOne({ name: first_name })
-        .populate({
-          path: 'variation',
-          match: { price: email },
-          select: 'name price',
-        }),
+      ProductService.ProductGetOne({ name: first_name }),
     ]);
-    
-    console.log("dataCustomer",dataCustomer)
+
     console.log("product",product)
-    
     // Préparation des données de la commande
     const orderData = {
       products: [product.id],
