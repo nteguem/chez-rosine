@@ -19,7 +19,6 @@ const makePayment = async (user, amount, mobileMoneyPhone,product,quantity,locat
   };
 
   try {
-    console.log("payload",payload)
     const response = await fetch(paiement_url, {
       method: 'POST',
       headers: {

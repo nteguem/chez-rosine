@@ -70,6 +70,9 @@ async function handlePaymentMonetbilSuccess(req, res, client) {
         }),
     ]);
     
+    console.log("dataCustomer",dataCustomer)
+    console.log("product",product)
+    
     // Préparation des données de la commande
     const orderData = {
       products: [product.id],
@@ -106,11 +109,6 @@ async function handlePaymentMonetbilSuccess(req, res, client) {
       await sendMediaToNumber(client, admin.phoneNumber, documentType, pdfBase64Invoice, pdfNameInvoice);
       await sendMessageToNumber(client, admin.phoneNumber, adminMessage);
     }
-    await logService.addLog(
-      `${req.body}`,
-      'reussi paiement',
-      'error'
-    );
     res.status(200).send('Success');
   } catch (error) {
     await logService.addLog(
