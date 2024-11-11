@@ -13,7 +13,7 @@ const sendWithTyping = async (client, chatId, message, isMedia = false, options 
         // Delay before sending the message or media
         setTimeout(async () => { 
             if (isMedia) {
-                await client.sendMessage(chatId, automatedMessage, options); // Send media with automated tag
+                await client.sendMessage(chatId, message, options); // Send media with automated tag
             } else {
                 await client.sendMessage(chatId, automatedMessage); // Send text message with automated tag
             }
