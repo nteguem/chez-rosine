@@ -8,7 +8,7 @@ const sendWithTyping = async (client, chatId, message, isMedia = false, options 
         const chat = await client.getChatById(chatId); // Retrieve the chat by ID
         await chat.sendStateTyping(); // Indicate that we are typing 
 
-        const automatedMessage = `*_[Message automatisé]_*\n\n${message}`;
+        const automatedMessage = `*_[Assistant virtuel]_*\n\n${message}`;
  
         // Delay before sending the message or media
         setTimeout(async () => { 
