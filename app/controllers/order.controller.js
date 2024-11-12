@@ -6,6 +6,7 @@ const ProductService = require("../services/product.service")
 const { sendMessageToNumber, sendMediaToNumber } = require('../views/whatsApp/whatsappMessaging');
 const { fillPdfFields } = require("../services/fillFormPdf.service");
 const moment = require("moment");
+moment.locale('fr');  
 const pathInvoice = "../templates-pdf/invoice.pdf"
 
 // Créer une nouvelle commande
