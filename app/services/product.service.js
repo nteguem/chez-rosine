@@ -79,15 +79,20 @@ async function listProducts(categoryId = null, limit = 10, offset = 0) {
     offset = Math.max(0, parseInt(offset, 10)); // Minimum 0 pour l'offset
 
     // Définir le filtre de la requête
-    const query = categoryId ? { category: categoryId } : {};
+    const query = categoryId ? { 'variation.category': categoryId } : {};
 
     // Comptez le total des produits de manière efficace
     const totalCount = await Product.countDocuments(query);
 
     // Récupérez les produits avec limit et offset
     const products = await Product.find(query)
-      .populate('category')
-      .populate('variation')
+      .populate({
+        path: 'variation',
+        populate: {
+          path: 'category',
+          model: 'Category' // Assurez-vous que le modèle Category est bien configuré
+        }
+      })
       .limit(limit)
       .skip(offset)
       .exec(); // Utilisez exec() pour exécuter la requête
