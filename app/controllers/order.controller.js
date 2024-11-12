@@ -131,7 +131,6 @@ async function handlePaymentMonetbilSuccess(req, res, client) {
 
   
   async function handlePaymentMonetbilFailure(req, res, client, operatorMessage) {
-    console.log("ressss",req.body)
     try {
       const whatappNumberOnly = req.body.user.split('(')[0].trim();
       const failureMessage = operatorMessage || `Désolé, Votre paiement mobile pour *${req.body.last_name} ${req.body.first_name}* n'a pas abouti en raison d'une erreur lors de la transaction. Veuillez vérifier vos informations de paiement et réessayer. Si le problème persiste, contactez-nous pour de l'aide. Nous nous excusons pour tout désagrément.\n\nPour toute assistance, Tapez 3 dans le menu principal pour parler directement à un membre de notre équipe.\n\nCordialement,\n\n L'équipe les bons plats`;
@@ -148,6 +147,7 @@ async function handlePaymentMonetbilSuccess(req, res, client) {
   }
   
   async function handlePaymentMonetbilNotification(req, res, client) {
+    console.log("ressssss",req.body)
     try {
       if (req.body.message === 'FAILED') {
         await handlePaymentMonetbilFailure(req, res, client);
