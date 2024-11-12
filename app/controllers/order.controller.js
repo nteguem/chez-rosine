@@ -64,7 +64,6 @@ async function handlePaymentMonetbilSuccess(req, res, client) {
       userService.getOne(whatappNumberOnly),
       ProductService.ProductGetOne({ name: first_name }),
     ]);
-
       // Vérifier si le produit et le client existent
       if (!product) {
         await logService.addLog(
@@ -85,9 +84,8 @@ async function handlePaymentMonetbilSuccess(req, res, client) {
       }
 
     // Préparation des données de la commande
-    console.log("product.id",product.id)
     const orderData = {
-      products: [product.id],
+      products: [product.product.id],
       deliveryPerson: dataCustomer.user.id,
       customer: dataCustomer.user.id,
       deliveryLocation: location,
