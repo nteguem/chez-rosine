@@ -84,8 +84,9 @@ async function handlePaymentMonetbilSuccess(req, res, client) {
         return ResponseService.notFound(res, { message: "Client non trouvé." });
       }
     // Préparation des données de la commande
+    console.log("product",product)
     const orderData = {
-      products: ["6732f891688c71ac71abadee"],
+      products: [product?.product?.id],
       deliveryPerson: dataCustomer?.user?.id,
       customer: dataCustomer?.user?.id,
       deliveryLocation: location,
