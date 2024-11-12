@@ -82,12 +82,12 @@ async function handlePaymentMonetbilSuccess(req, res, client) {
         );
         return ResponseService.notFound(res, { message: "Client non trouvé." });
       }
-
+     console.log("product",product)
     // Préparation des données de la commande
     const orderData = {
-      products: [product.product.id],
-      deliveryPerson: dataCustomer.user.id,
-      customer: dataCustomer.user.id,
+      products: [product?.product?.id],
+      deliveryPerson: dataCustomer?.user?.id,
+      customer: dataCustomer?.user?.id,
       deliveryLocation: location,
       totalPrice: amount,
       paymentMethod: operator_code,
@@ -147,7 +147,6 @@ async function handlePaymentMonetbilSuccess(req, res, client) {
   }
   
   async function handlePaymentMonetbilNotification(req, res, client) {
-    await sendMessageToNumber(client, "23797874621", "callback sucess");
     try {
       if (req.body.message === 'FAILED') {
         await handlePaymentMonetbilFailure(req, res, client);
