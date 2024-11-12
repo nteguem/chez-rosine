@@ -16,7 +16,7 @@ const replyInvalid = async (msg, client, user, message = `⚠️ Option non vali
   if (user.exist) {
     replyToMessage(client, msg, message);
   }
-  if (Steps[user.data.phoneNumber].currentMenu === "mainMenu") {
+  if (Steps[user.data.phoneNumber].currentMenu === "mainMenu" && !user.exist) {
     await sendMessageToNumber(client, user.data.phoneNumber, menuData(user.data.pseudo, user.exist));
   } 
 };

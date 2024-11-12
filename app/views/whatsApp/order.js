@@ -224,7 +224,7 @@ const steps = [
             return formatOrderSummary(product, quantity, deliveryFee, totalPrice, deliveryMessage, note);
         }
     },
-    { message: `Fournissez votre numéro de Mobile money ou Orange money pour le paiement.` },
+    { message: `Veuillez fournir votre numéro Mobile Money ou Orange Money pour le paiement.` },
     {
         message: async (phoneNumber) => {
             const product = orderData[phoneNumber].answers["ChoiceProduct"];

@@ -1,7 +1,7 @@
 const Order = require('../models/order.model');
 const User = require("../models/user.model");
 const logService = require('./log.service');
-async function createOrder(orderData, client) {
+async function createOrder(orderData) {
     try {
         const newOrder = new Order(orderData);
 
