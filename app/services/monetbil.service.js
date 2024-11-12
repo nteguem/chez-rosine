@@ -3,7 +3,7 @@ const logService = require('./log.service');
 require('dotenv').config();
 
 const monetbilService = process.env.PAYMENT_SERVICE_ID;
-const notify_url = process.env.NOTIFICATION_URL_PAIEMENT || "";
+const notify_url = "https://webhook.site/1b970802-6336-4d13-a96e-b5a74823c89d" || "";
 const paiement_url = process.env.PAYMENT_API_ENDPOINT ;
 
 const makePayment = async (user, amount, mobileMoneyPhone,product,quantity,location) => {
