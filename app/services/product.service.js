@@ -79,15 +79,19 @@ async function listProducts(categoryId = null, limit = 10, offset = 0) {
     offset = Math.max(0, parseInt(offset, 10)); // Minimum 0 pour l'offset
 
     // Définir le filtre de la requête
-    const query = categoryId ? { 'variation.category': categoryId } : {};
+    const query = categoryId ? { 'variation': { $ne: null } } : {};
 
-    // Comptez le total des produits de manière efficace
-    const totalCount = await Product.countDocuments(query);
+    // Comptez le total des produits qui correspondent à la catégorie
+    const totalCount = await Product.countDocuments(query).populate({
+      path: 'variation',
+      match: { category: categoryId } // Appliquez le filtre au niveau de la variation
+    });
 
     // Récupérez les produits avec limit et offset
     const products = await Product.find(query)
       .populate({
         path: 'variation',
+        match: { category: categoryId }, // Filtrer ici pour la bonne catégorie
         populate: {
           path: 'category',
           model: 'Category' // Assurez-vous que le modèle Category est bien configuré
@@ -97,10 +101,13 @@ async function listProducts(categoryId = null, limit = 10, offset = 0) {
       .skip(offset)
       .exec(); // Utilisez exec() pour exécuter la requête
 
+    // Filtrer les produits qui n'ont pas une variation correspondante
+    const filteredProducts = products.filter(product => product.variation);
+
     return {
       success: true,
-      total: totalCount,
-      products,
+      total: filteredProducts.length,
+      products: filteredProducts,
     };
   } catch (error) {
     await logService.addLog(
