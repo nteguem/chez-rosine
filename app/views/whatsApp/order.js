@@ -16,15 +16,24 @@ const productsData = {
 
 const generateProductList = async () => {
     const { category } = await getCategoryByName("mignardises");
-    const { products } = await listProducts(category.id)
-    productsData.products = (products);
+    const { products } = await listProducts(category.id);
+
+    // Vérification si aucun produit n'est trouvé
+    if (!products || products.length === 0) {
+        return "Aucun produit disponible dans cette catégorie pour le moment.";
+    }
+
+    productsData.products = products;
     let productList = "📋 Choisissez un produit :\n\n";
-    const uniqueProducts = [...new Set(productsData?.products.map(product => product.name))];
+    const uniqueProducts = [...new Set(productsData.products.map(product => product.name))];
+
     uniqueProducts.forEach((product, index) => {
-        productList += `${index + 1}️. *${product}* - Tapez ${index + 1}\n`;
+        productList += `${index + 1}. *${product}* - Tapez ${index + 1}\n`;
     });
+
     return productList;
 };
+
 
 const generateProductType = async () => {
     const { category } = await getCategoryByName("mignardises");
