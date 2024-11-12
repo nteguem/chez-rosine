@@ -59,7 +59,7 @@ async function handlePaymentMonetbilSuccess(req, res, client) {
     const currentDate = moment().format('dddd D MMMM YYYY à HH:mm:ss');
     
     req.body = { ...req.body, date: currentDate, location, user };
-
+     console.log("first_name.split(' ')[0]",first_name.split(' ')[0])
     // Récupération des données client et livraison
     const [dataCustomer, product] = await Promise.all([
       userService.getOne(whatappNumberOnly),
