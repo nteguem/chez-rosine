@@ -85,6 +85,7 @@ async function handlePaymentMonetbilSuccess(req, res, client) {
       }
 
     // Préparation des données de la commande
+    console.log("product.id",product.id)
     const orderData = {
       products: [product.id],
       deliveryPerson: dataCustomer.user.id,
@@ -148,11 +149,6 @@ async function handlePaymentMonetbilSuccess(req, res, client) {
   }
   
   async function handlePaymentMonetbilNotification(req, res, client) {
-    await logService.addLog(
-      `handlePaymentMonetbilNotification`,
-      'handlePaymentMonetbilNotification',
-      'info'
-    );
     try {
       if (req.body.message === 'FAILED') {
         await handlePaymentMonetbilFailure(req, res, client);
