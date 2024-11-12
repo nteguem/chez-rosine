@@ -64,6 +64,8 @@ async function handlePaymentMonetbilSuccess(req, res, client) {
       userService.getOne(whatappNumberOnly),
       ProductService.ProductGetOne({ name: first_name }),
     ]);
+    console.log("product",product)
+
       // Vérifier si le produit et le client existent
       if (!product) {
         await logService.addLog(
@@ -82,7 +84,6 @@ async function handlePaymentMonetbilSuccess(req, res, client) {
         );
         return ResponseService.notFound(res, { message: "Client non trouvé." });
       }
-     console.log("product",product)
     // Préparation des données de la commande
     const orderData = {
       products: [product?.product?.id],
