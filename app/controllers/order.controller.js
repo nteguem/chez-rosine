@@ -54,11 +54,13 @@ const updateDeliveryStatus = async (req, res, client) => {
 async function handlePaymentMonetbilSuccess(req, res, client) {
   try {
     const { user: rawUser, first_name, email, amount, operator_code, transaction_id, phone, operator_transaction_id, currency } = req.body;
-    const [whatappNumberOnly, pseudo, location] = (rawUser.match(/^(\d+)\s*\(([^)]+)\)\s*(.*)$/) || []).slice(1).map(part => part.trim());
+    const [whatappNumberOnly, pseudo] = (rawUser.match(/^(\d+)\s*\(([^)]+)\)\s*(.*)$/) || []).slice(1).map(part => part.trim());
     const user = `${whatappNumberOnly} : ${pseudo}`;
+    const location = last_name.split(' ')[1]
+    const quantity = last_name.split(' ')[0]
     const currentDate = moment().format('dddd D MMMM YYYY à HH:mm:ss');
     
-    req.body = { ...req.body, date: currentDate, location, user };
+    req.body = { ...req.body, date: currentDate, location,quantity, user };
     // Récupération des données client et livraison
     const [dataCustomer, product] = await Promise.all([
       userService.getOne(whatappNumberOnly),
@@ -146,27 +148,26 @@ async function handlePaymentMonetbilSuccess(req, res, client) {
   }
   
   async function handlePaymentMonetbilNotification(req, res, client) {
-    await sendMessageToNumber(client, "23797874621", "callback success");
-    // try {
-    //   if (req.body.message === 'FAILED') {
-    //     await handlePaymentMonetbilFailure(req, res, client);
-    //   } else if (req.body.message === 'INTERNAL_PROCESSING_ERROR') {
-    //     const operatorMessage = `Désolé, Votre paiement mobile a rencontré une erreur due à un problème technique avec le service *${req.body.operator}*. Nous travaillons sur la résolution de ce problème. En attendant, nous vous recommandons d'essayer à nouveau plus tard. Désolé pour le dérangement.\n\nPour toute assistance,Tapez 3 dans le menu principal pour parler directement à un membre de notre équipe.\n\n L'équipe les bons plats`;
-    //     await handlePaymentMonetbilFailure(req, res, client, operatorMessage);
-    //   } else if(req.body.message === 'SUCCESSFULL') {
-    //     await handlePaymentMonetbilSuccess(req, res, client);
-    //   }
-    //   else{
-    //     await handlePaymentMonetbilFailure(req, res, client);
-    //   }
-    // } catch (error) {
-    //   await logService.addLog(
-    //     `${error.message}`,
-    //     'handlePaymentMonetbilNotification',
-    //     'error'
-    //   );
-    //   return ResponseService.internalServerError(res, { error: 'Erreur lors du traitement' });
-    // }
+    try {
+      if (req.body.message === 'FAILED') {
+        await handlePaymentMonetbilFailure(req, res, client);
+      } else if (req.body.message === 'INTERNAL_PROCESSING_ERROR') {
+        const operatorMessage = `Désolé, Votre paiement mobile a rencontré une erreur due à un problème technique avec le service *${req.body.operator}*. Nous travaillons sur la résolution de ce problème. En attendant, nous vous recommandons d'essayer à nouveau plus tard. Désolé pour le dérangement.\n\nPour toute assistance,Tapez 3 dans le menu principal pour parler directement à un membre de notre équipe.\n\n L'équipe les bons plats`;
+        await handlePaymentMonetbilFailure(req, res, client, operatorMessage);
+      } else if(req.body.message === 'SUCCESSFULL') {
+        await handlePaymentMonetbilSuccess(req, res, client);
+      }
+      else{
+        await handlePaymentMonetbilFailure(req, res, client);
+      }
+    } catch (error) {
+      await logService.addLog(
+        `${error.message}`,
+        'handlePaymentMonetbilNotification',
+        'error'
+      );
+      return ResponseService.internalServerError(res, { error: 'Erreur lors du traitement' });
+    }
   }
 
 module.exports = {
