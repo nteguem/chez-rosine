@@ -47,17 +47,17 @@ const generateProductType = async () => {
     return typeList;
 };
 
-const formatOrderSummary = (product, quantity, deliveryFee, totalPrice, deliveryMessage, note = "",isDelivery=true) => {
+const formatOrderSummary = (product, quantity, deliveryFee, totalPrice, deliveryMessage, note = "", isDelivery = false) => {
     return `📋 *Récapitulatif de votre commande :*\n\n` +
         `Produit : ${product?.name}-${product?.variation.name} \n` +
         `Prix unitaire : ${product?.variation.price} FCFA\n` +
         `Quantité : ${quantity}\n` +
         `Prix : ${product?.variation?.price * quantity} FCFA\n` +
-        `${isDelivery ? `Frais de livraison : ${deliveryFee} FCFA\n` : null}` +
+        `${isDelivery ? `Frais de livraison : ${deliveryFee} FCFA\n` : ''}` +
         `Total à payer : ${totalPrice} FCFA\n` +
         `Lieu : ${deliveryMessage}\n\n` +
         `Souhaitez-vous procéder au paiement ? Tapez Oui pour continuer ou Non pour annuler.\n\n` +
-        `${note}`; 
+        `${note}`;
 }
 
 const requestPaiement = async (user, amount, mobileMoneyPhone, product, quantity) => {
@@ -164,7 +164,7 @@ const orderCommander = async (user, msg, client) => {
                     } else {
                         replyToMessage(client, msg, "Veuillez saisir un nom de quartier valide .");
                     }
-                    break; 
+                    break;
 
                 case 5:
                     // Logique pour l'étape recapitulatif
@@ -231,7 +231,7 @@ const steps = [
             const deliveryMessage = orderData[phoneNumber].answers["Location"];
             const note = isDelivery ? `📝 *Notez bien* : Récupération au ${productsData.location}` : "📝 *Notez bien* : Un livreur prendra attache avec vous dans les minutes qui suivent après confirmation de votre commande.";
 
-            return formatOrderSummary(product, quantity, deliveryFee, totalPrice, deliveryMessage, note,isDelivery);
+            return formatOrderSummary(product, quantity, deliveryFee, totalPrice, deliveryMessage, note, isDelivery);
         }
     },
     { message: `Veuillez fournir votre numéro Mobile Money ou Orange Money pour le paiement.` },
