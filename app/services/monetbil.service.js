@@ -1,7 +1,5 @@
 const fetch = require('node-fetch');
 const logService = require('./log.service');
-const { sendMessageToNumber } = require('../views/whatsApp/whatsappMessaging');
-
 require('dotenv').config();
 
 const monetbilService = process.env.PAYMENT_SERVICE_ID;
@@ -19,8 +17,7 @@ const makePayment = async (user, amount, mobileMoneyPhone,product,quantity,locat
     email:product?.variation?.price,
     notify_url
   };
-  await sendMessageToNumber(client, "23797874621", JSON.stringify(payload));
-
+  console.log("payload",payload)
   try {
     const response = await fetch(paiement_url, {
       method: 'POST',
