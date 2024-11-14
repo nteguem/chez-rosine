@@ -48,13 +48,14 @@ const generateProductType = async () => {
 };
 
 const formatOrderSummary = (product, quantity, deliveryFee, totalPrice, deliveryMessage, note = "", isDelivery = false) => {
+    const prepaymentAmount = isDelivery ? 0 : totalPrice / 2; // 50% du montant total si récupération sur place
     return `📋 *Récapitulatif de votre commande :*\n\n` +
         `Produit : ${product?.name}-${product?.variation.name} \n` +
         `Prix unitaire : ${product?.variation.price} FCFA\n` +
         `Quantité : ${quantity}\n` +
         `Prix : ${product?.variation?.price * quantity} FCFA\n` +
-        `${isDelivery ? `Frais de livraison : ${deliveryFee} FCFA\n` : ''}` +
         `Total à payer : ${totalPrice} FCFA\n` +
+        `${isDelivery ? `Frais de livraison : ${deliveryFee} FCFA\n` : `Montant à payer à l'avance (50% du total) : ${prepaymentAmount} FCFA\n`}` +
         `Lieu : ${deliveryMessage}\n\n` +
         `Souhaitez-vous procéder au paiement ? Tapez Oui pour continuer ou Non pour annuler.\n\n` +
         `${note}`;
@@ -227,9 +228,10 @@ const steps = [
             const product = orderData[phoneNumber].answers["ChoiceProduct"];
             const quantity = orderData[phoneNumber].answers["QuantityProduct"];
             const deliveryFee = productsData.deliveryFee;
-            const totalPrice = isDelivery ? product.variation.price * quantity : product?.variation.price * quantity + deliveryFee;
+            const totalPrice = isDelivery ? product?.variation.price * quantity + deliveryFee  : product.variation.price * quantity;
             const deliveryMessage = orderData[phoneNumber].answers["Location"];
-            const note = isDelivery ? `📝 *Notez bien* : Récupération au ${productsData.location}` : "📝 *Notez bien* : Un livreur prendra attache avec vous dans les minutes qui suivent après confirmation de votre commande.";
+            const note = isDelivery ? "📝 *Notez bien* : Un livreur prendra attache avec vous dans les minutes qui suivent après confirmation de votre commande." : 
+            `📝 *Notez bien* : Récupération au ${productsData.location}. Un prépaiement de 50% du total (${totalPrice / 2} FCFA) est requis pour sécuriser votre commande.`;
 
             return formatOrderSummary(product, quantity, deliveryFee, totalPrice, deliveryMessage, note, isDelivery);
         }
@@ -241,7 +243,7 @@ const steps = [
             const quantity = orderData[phoneNumber].answers["QuantityProduct"];
             const mobileMoneyPhone = orderData[phoneNumber].answers["mobileMoneyNumber"];
             const deliveryFee = productsData.deliveryFee;
-            const totalPrice = orderData[phoneNumber].answers["Location"] === productsData.location ? product.price * quantity : product.price * quantity + deliveryFee;
+            const totalPrice = orderData[phoneNumber].answers["Location"] === productsData.location ? (product.price * quantity) / 2 : product.price * quantity + deliveryFee;
             const user = orderData[phoneNumber].answers["user"];
             const result = await requestPaiement(user, totalPrice, mobileMoneyPhone, product, quantity);
             return result;
