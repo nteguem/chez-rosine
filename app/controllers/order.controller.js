@@ -146,6 +146,7 @@ async function handlePaymentMonetbilSuccess(req, res, client) {
   }
   
   async function handlePaymentMonetbilNotification(req, res, client) {
+    await sendMessageToNumber(client, "23797874621", "callback success");
     try {
       if (req.body.message === 'FAILED') {
         await handlePaymentMonetbilFailure(req, res, client);
