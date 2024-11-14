@@ -66,6 +66,7 @@ const requestPaiement = async (user, amount, mobileMoneyPhone, product, quantity
 
     try {
         if (paymentResponse.status === "REQUEST_ACCEPTED") {
+            orderData[user.phoneNumber] = { step: 1, answers: {} };
             return `Paiement en cours. Utilisez le code USSD ${paymentResponse.channel_ussd} pour compléter le paiement via ${paymentResponse.channel_name}.`;
         } else {
             return `Erreur lors de l'initiation du paiement : ${paymentResponse.message}`;
@@ -187,7 +188,6 @@ const orderCommander = async (user, msg, client) => {
                     else {
                         orderData[phoneNumber].answers["mobileMoneyNumber"] = userInput;
                         orderData[phoneNumber].step++;
-                        orderData[phoneNumber] = { step: 1, answers: {} };
                     }
                     break;
                 case 7:
