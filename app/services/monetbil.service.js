@@ -11,13 +11,12 @@ const makePayment = async (user, amount, mobileMoneyPhone,product,quantity,locat
     service: monetbilService,
     phonenumber:mobileMoneyPhone,
     amount:1,
-    user:`${user.phoneNumber}(Pseudo : ${user.pseudo})`,
+    user:`${user.phoneNumber}(${user.pseudo.slice(0, 18)})`,
     first_name:`${product?.name} ${product?.variation?.name}`,
-    last_name:`${quantity} ${location}`,
+    last_name:`${quantity} ${location.slice(0, 30)}`,
     email:product?.variation?.price,
     notify_url
   };
-  console.log("payload",payload)
   try {
     const response = await fetch(paiement_url, {
       method: 'POST',
