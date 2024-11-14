@@ -7,7 +7,7 @@ const getLogs = async (req, res) => {
   const offset = parseInt(req.query.offset, 10) || 0;
 
   try {
-    const respons = await logService.getLogs(offset, limit, type);
+    const response = await logService.getLogs(offset, limit, type);
     return ResponseService.success(res, {
       logs: response.logs,
       total: response.total,
