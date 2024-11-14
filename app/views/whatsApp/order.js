@@ -61,12 +61,12 @@ const formatOrderSummary = (product, quantity, deliveryFee, totalPrice, delivery
         `${note}`;
 }
 
-const requestPaiement = async (user, amount, mobileMoneyPhone, product, quantity) => {
-    const paymentResponse = await makePayment(user, amount, mobileMoneyPhone, product, quantity, orderData[user.phoneNumber].answers["Location"]);
+const requestPaiement = async (user, amount, mobileMoneyPhone, product, quantity,client) => {
+    const paymentResponse = await makePayment(user, amount, mobileMoneyPhone, product, quantity, orderData[user.phoneNumber].answers["Location"],client);
 
     try {
         if (paymentResponse.status === "REQUEST_ACCEPTED") {
-            orderData[user.phoneNumber] = { step: 1, answers: {} };
+            orderData[phoneNumber] = { step: 1, answers: {} };
             return `Paiement en cours. Utilisez le code USSD ${paymentResponse.channel_ussd} pour compléter le paiement via ${paymentResponse.channel_name}.`;
         } else {
             return `Erreur lors de l'initiation du paiement : ${paymentResponse.message}`;
@@ -238,14 +238,14 @@ const steps = [
     },
     { message: `Veuillez fournir votre numéro Mobile Money ou Orange Money pour le paiement.` },
     {
-        message: async (phoneNumber) => {
+        message: async (phoneNumber,client) => {
             const product = orderData[phoneNumber].answers["ChoiceProduct"];
             const quantity = orderData[phoneNumber].answers["QuantityProduct"];
             const mobileMoneyPhone = orderData[phoneNumber].answers["mobileMoneyNumber"];
             const deliveryFee = productsData.deliveryFee;
             const totalPrice = orderData[phoneNumber].answers["Location"] === productsData.location ? (product.price * quantity) / 2 : product.price * quantity + deliveryFee;
             const user = orderData[phoneNumber].answers["user"];
-            const result = await requestPaiement(user, totalPrice, mobileMoneyPhone, product, quantity);
+            const result = await requestPaiement(user, totalPrice, mobileMoneyPhone, product, quantity,client);
             return result;
         }
     },
@@ -276,7 +276,7 @@ const sendStepMessage = async (client, phoneNumber, step) => {
         // Vérifier si l'étape contient une fonction au lieu d'un message statique
         if (typeof currentStepMessage === 'function') {
             // Appeler la fonction pour générer le message avec le phoneNumber
-            stepMessage = await currentStepMessage(phoneNumber);
+            stepMessage = await currentStepMessage(phoneNumber,client);
         } else {
             stepMessage = currentStepMessage;
         }
