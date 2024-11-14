@@ -52,6 +52,7 @@ const updateDeliveryStatus = async (req, res, client) => {
 };
 
 async function handlePaymentMonetbilSuccess(req, res, client) {
+  console.log("handlePaymentMonetbilSuccess")
   try {
     const { user: rawUser, first_name, email, amount, operator_code, transaction_id, phone, operator_transaction_id, currency } = req.body;
     const [whatappNumberOnly, pseudo, location] = (rawUser.match(/^(\d+)\s*\(([^)]+)\)\s*(.*)$/) || []).slice(1).map(part => part.trim());
@@ -146,6 +147,7 @@ async function handlePaymentMonetbilSuccess(req, res, client) {
   }
   
   async function handlePaymentMonetbilNotification(req, res, client) {
+    console.log("handlePaymentMonetbilNotification")
     try {
       if (req.body.message === 'FAILED') {
         await handlePaymentMonetbilFailure(req, res, client);
