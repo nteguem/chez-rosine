@@ -47,13 +47,13 @@ const generateProductType = async () => {
     return typeList;
 };
 
-const formatOrderSummary = (product, quantity, deliveryFee, totalPrice, deliveryMessage, note = "") => {
+const formatOrderSummary = (product, quantity, deliveryFee, totalPrice, deliveryMessage, note = "",isDelivery=true) => {
     return `📋 *Récapitulatif de votre commande :*\n\n` +
         `Produit : ${product?.name}-${product?.variation.name} \n` +
         `Prix unitaire : ${product?.variation.price} FCFA\n` +
         `Quantité : ${quantity}\n` +
         `Prix : ${product?.variation?.price * quantity} FCFA\n` +
-        `Frais de livraison : ${deliveryFee} FCFA\n` +
+        `${isDelivery ? `Frais de livraison : ${deliveryFee} FCFA\n` : null}` +
         `Total à payer : ${totalPrice} FCFA\n` +
         `Lieu : ${deliveryMessage}\n\n` +
         `Souhaitez-vous procéder au paiement ? Tapez Oui pour continuer ou Non pour annuler.\n\n` +
@@ -223,14 +223,15 @@ const steps = [
     },
     {
         message: (phoneNumber) => {
+            const isDelivery = !(orderData[phoneNumber].answers["Location"] === productsData.location);
             const product = orderData[phoneNumber].answers["ChoiceProduct"];
             const quantity = orderData[phoneNumber].answers["QuantityProduct"];
             const deliveryFee = productsData.deliveryFee;
-            const totalPrice = orderData[phoneNumber].answers["Location"] === productsData.location ? product.variation.price * quantity : product?.variation.price * quantity + deliveryFee;
+            const totalPrice = isDelivery ? product.variation.price * quantity : product?.variation.price * quantity + deliveryFee;
             const deliveryMessage = orderData[phoneNumber].answers["Location"];
-            const note = orderData[phoneNumber].answers["Location"] === productsData.location ? `📝 *Notez bien* : Récupération au ${productsData.location}` : "📝 *Notez bien* : Un livreur prendra attache avec vous dans les minutes qui suivent après confirmation de votre commande.";
+            const note = isDelivery ? `📝 *Notez bien* : Récupération au ${productsData.location}` : "📝 *Notez bien* : Un livreur prendra attache avec vous dans les minutes qui suivent après confirmation de votre commande.";
 
-            return formatOrderSummary(product, quantity, deliveryFee, totalPrice, deliveryMessage, note);
+            return formatOrderSummary(product, quantity, deliveryFee, totalPrice, deliveryMessage, note,isDelivery);
         }
     },
     { message: `Veuillez fournir votre numéro Mobile Money ou Orange Money pour le paiement.` },
