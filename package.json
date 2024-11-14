@@ -5,7 +5,9 @@
   "main": "rosine.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon rosine.js"
+    "start": "nodemon rosine.js",
+    "lint": "yarn eslint .",
+    "lint:fix": "yarn eslint . --fix"
   },
   "author": "",
   "license": "ISC",

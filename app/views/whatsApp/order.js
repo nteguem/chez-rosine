@@ -54,8 +54,8 @@ const formatOrderSummary = (product, quantity, deliveryFee, totalPrice, delivery
         `Prix unitaire : ${product?.variation.price} FCFA\n` +
         `Quantité : ${quantity}\n` +
         `Prix : ${product?.variation?.price * quantity} FCFA\n` +
-        `Total à payer : ${totalPrice} FCFA\n` +
         `${isDelivery ? `Frais de livraison : ${deliveryFee} FCFA\n` : `Montant à payer à l'avance (50% du total) : ${prepaymentAmount} FCFA\n`}` +
+        `Total à payer : ${totalPrice} FCFA\n` +
         `Lieu : ${deliveryMessage}\n\n` +
         `Souhaitez-vous procéder au paiement ? Tapez Oui pour continuer ou Non pour annuler.\n\n` +
         `${note}`;
@@ -176,7 +176,7 @@ const orderCommander = async (user, msg, client) => {
                         (orderData[phoneNumber]) = { step: 1, answers: {} };
                         replyToMessage(client, msg, "Commande annulée. Tapez # pour revenir au menu principal.");
                     } else {
-                        replyInvalid(msg, client, user, "Veuillez répondre par Oui ou Non.");
+                        replyToMessage(client, msg,"Veuillez répondre par Oui ou Non.");
                     }
                     break;
                 case 6:
@@ -191,8 +191,8 @@ const orderCommander = async (user, msg, client) => {
                     break;
                 case 7:
                     // Logique pour l'étape finale
-                    Object.assign(orderData[phoneNumber], { step: 1, answers: {} });
-
+                    console.log("last step")
+                    orderData[phoneNumber] = { step: 1, answers: {} };
                     break;
                 default:
                     replyToMessage(client, msg, "Étape inconnue.");
