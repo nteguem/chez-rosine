@@ -53,7 +53,7 @@ const updateDeliveryStatus = async (req, res, client) => {
 
 async function handlePaymentMonetbilSuccess(req, res, client) {
   try {
-    const { user: rawUser, first_name, email, amount, operator_code, transaction_id, phone, operator_transaction_id, currency } = req.body;
+    const { user: rawUser,last_name, first_name, email, amount, operator_code, transaction_id, phone, operator_transaction_id, currency } = req.body;
     const [whatappNumberOnly, pseudo] = (rawUser.match(/^(\d+)\s*\(([^)]+)\)\s*(.*)$/) || []).slice(1).map(part => part.trim());
     const user = `${whatappNumberOnly} : ${pseudo}`;
     const location = last_name.split(' ')[1]
