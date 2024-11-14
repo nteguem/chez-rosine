@@ -187,11 +187,11 @@ const orderCommander = async (user, msg, client) => {
                     else {
                         orderData[phoneNumber].answers["mobileMoneyNumber"] = userInput;
                         orderData[phoneNumber].step++;
+                        orderData[phoneNumber] = { step: 1, answers: {} };
                     }
                     break;
                 case 7:
                     // Logique pour l'étape finale
-                    console.log("last step")
                     orderData[phoneNumber] = { step: 1, answers: {} };
                     break;
                 default:
