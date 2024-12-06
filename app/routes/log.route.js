@@ -14,6 +14,10 @@ const setupLogRoutes = (app) => {
         logHandler.getLogs(req, res);
     });
 
+    router.put('/update/:id', (req, res) => {
+        logHandler.updateLogResolved(req, res);
+    });
+
 };
 
 module.exports = { setupLogRoutes };

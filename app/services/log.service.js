@@ -36,9 +36,24 @@ async function getLogs(offset = 0, limit = 10, type = null) {
       total
     };
   }
+
+  /**
+ * Met à jour l'état 'resolved' d'un log.
+ * @param {String} logId - ID du log à mettre à jour.
+ * @param {Boolean} resolved - Nouvel état du log (true ou false).
+ * @returns {Promise<Object>} - Le log mis à jour.
+ */
+async function updateLogResolved(logId, resolved) {
+  return await Log.findByIdAndUpdate(
+    logId,
+    { resolved },
+    { new: true }
+  );
+}
   
   module.exports = {
     addLog,
     getLogs,
+    updateLogResolved
   };
   

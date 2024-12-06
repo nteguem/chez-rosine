@@ -22,6 +22,29 @@ const getLogs = async (req, res) => {
   }
 };
 
+/**
+ * Met à jour l'état 'resolved' d'un log spécifique.
+ * @param {express.Request} req - La requête HTTP.
+ * @param {express.Response} res - La réponse HTTP.
+ */
+const updateLogResolved = async (req, res) => {
+  const { logId } = req.params;  
+  const { resolved } = req.body; 
+
+  try {
+    const updatedLog = await logService.updateLogResolved(logId, resolved);
+    return ResponseService.success(res, updatedLog);
+  } catch (error) {
+    await logService.addLog(
+      `${error.message}`,
+      'updateLogResolved',
+      'error'
+    );
+    return ResponseService.internalServerError(res, { error: 'Failed to update log resolution status' });
+  }
+};
+
 module.exports = {
   getLogs,
+  updateLogResolved
 };

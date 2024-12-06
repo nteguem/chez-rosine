@@ -19,6 +19,10 @@ const logSchema = new mongoose.Schema({
     enum: ['error', 'info', 'warning'],
     default: 'info',
   },
+  resolved: {
+    type: Boolean,
+    default: false,  
+  },
 });
 
 const Log = mongoose.model('Log', logSchema);
