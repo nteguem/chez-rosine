@@ -28,11 +28,11 @@ const getLogs = async (req, res) => {
  * @param {express.Response} res - La réponse HTTP.
  */
 const updateLogResolved = async (req, res) => {
-  const { logId } = req.params;  
+  const { id } = req.params;  
   const { resolved } = req.body; 
 
   try {
-    const updatedLog = await logService.updateLogResolved(logId, resolved);
+    const updatedLog = await logService.updateLogResolved(id, resolved);
     return ResponseService.success(res, updatedLog);
   } catch (error) {
     await logService.addLog(
