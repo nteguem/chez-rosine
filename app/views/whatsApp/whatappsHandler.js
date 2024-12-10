@@ -39,12 +39,11 @@ const initializeWhatsAppClient = (io) => {
 
   client.on('disconnected', () => {
     io.emit('qrCode', "disconnected");
-    io.emit('numberBot', "");
-    // Sauvegarde de la session localement avant de réinitialiser
-    // client.authInfo && client.authInfo.saveSession && client.authInfo.saveSession();
-    setTimeout(() => {
-      client.initialize();
-    }, 2000); 
+      io.emit('numberBot', "");
+      client.logout(); // Déconnecter le client WhatsApp
+      setTimeout(() => {
+        client.initialize();
+      }, 2000); 
   });
 
   return client;
