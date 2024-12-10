@@ -54,8 +54,9 @@ io.on('connection', (socket) => {
       io.emit('qrCode', "disconnected");
       io.emit('numberBot', "");
       client.logout(); // Déconnecter le client WhatsApp
-      client.initialize();
-
+      setTimeout(() => {
+        client.initialize();
+      }, 2000); 
     }
   });
 

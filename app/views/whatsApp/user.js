@@ -25,7 +25,7 @@ const replyInvalid = async (msg, client, user, message = `⚠️ Option non vali
 // Commandes utilisateur
 const UserCommander = async (user, msg, client) => {
   try {
-    if (!msg.isGroup) {
+    if (!msg.isGroup && !msg.isStatus) {
       if (!Steps[user.data.phoneNumber]) reset(user);
 
       if (msg.body === "#") {

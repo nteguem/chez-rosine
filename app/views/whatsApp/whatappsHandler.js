@@ -4,6 +4,8 @@ const { UserCommander } = require("./user");
 const { AdminCommander } = require("./admin")
 const logService = require('../../services/log.service');
 
+const SESSION_FILE_PATH = '../sessions/les-bons-plats';
+
 const initializeWhatsAppClient = (io) => {
   const puppeteerConfig = {
     args: ['--no-sandbox'],
@@ -16,7 +18,7 @@ const initializeWhatsAppClient = (io) => {
   const client = new Client({
     puppeteer: puppeteerConfig,
     authStrategy: new LocalAuth({
-      dataPath: '../sessions/les-bons-plats',
+      dataPath: SESSION_FILE_PATH,
     }),
   });
 
@@ -39,8 +41,10 @@ const initializeWhatsAppClient = (io) => {
     io.emit('qrCode', "disconnected");
     io.emit('numberBot', "");
     // Sauvegarde de la session localement avant de réinitialiser
-    client.authInfo && client.authInfo.saveSession && client.authInfo.saveSession();
-    client.initialize();
+    // client.authInfo && client.authInfo.saveSession && client.authInfo.saveSession();
+    setTimeout(() => {
+      client.initialize();
+    }, 2000); 
   });
 
   return client;
