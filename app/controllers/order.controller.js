@@ -24,24 +24,27 @@ const createOrder = async (req, res, client) => {
 
 
 async function getAllOrders(req, res) {
-    try {
-        const { deliveryStatus, startDate, endDate, productId, limit = 10, offset = 0 } = req.query;
+  try {
+      const { deliveryStatus, startDate, endDate, productId, limit = 10, offset = 0 } = req.query;
 
-        const filters = {
-            deliveryStatus,
-            startDate,
-            endDate,
-            productId
-        };
+      const filters = {
+          deliveryStatus,
+          startDate,
+          endDate,
+          productId
+      };
 
-        const { success, orders, total } = await orderService.getAllOrders(filters, parseInt(limit), parseInt(offset));
+      const response = await orderService.getAllOrders(filters, parseInt(limit), parseInt(offset));
 
-        if (!success) return res.status(400).json({ message: 'Failed to fetch orders' });
-
-        res.status(200).json({ orders, total });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
+      if (response.success) {
+          return ResponseService.success(res, { orders: response.orders, total: response.total });
+      } else {
+          return ResponseService.internalServerError(res, { error: 'Failed to fetch orders' });
+      }
+  } catch (error) {
+      await logService.addLog(`${error.message}`, 'getAllOrders', 'error');
+      return ResponseService.internalServerError(res, { error: 'Erreur lors de la récupération des commandes.' });
+  }
 }
 
 
