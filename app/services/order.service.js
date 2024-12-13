@@ -17,6 +17,31 @@ async function createOrder(orderData) {
     }
 }
 
+async function getAllOrders(filters = {}, limit = 10, offset = 0) {
+    try {
+        const query = {};
+
+        if (filters.deliveryStatus) query.deliveryStatus = filters.deliveryStatus;
+        if (filters.startDate && filters.endDate) {
+            query.createdAt = { $gte: new Date(filters.startDate), $lte: new Date(filters.endDate) };
+        }
+        if (filters.productId) query.products = filters.productId;
+
+        const totalCount = await Order.countDocuments(query);
+        const orders = await Order.find(query)
+            .populate('customer', 'name')
+            .populate('products', 'name')
+            .populate('deliveryPerson', 'name')
+            .skip(offset)
+            .limit(limit);
+
+        return { success: true, orders, total: totalCount };
+    } catch (error) {
+        await logService.addLog(`${error.message}`, 'getAllOrders', 'error');
+        throw new Error('Failed to fetch orders.');
+    }
+}
+
 // Récupérer les commandes d'un utilisateur spécifique avec des filtres
 async function getOrdersByUser(userId, filters = {}, limit = 10, offset = 0, client) {
     try {
@@ -94,4 +119,5 @@ module.exports = {
     createOrder,
     getOrdersByUser,
     updateDeliveryStatus,
+    getAllOrders
 };

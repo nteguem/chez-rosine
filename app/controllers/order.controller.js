@@ -22,6 +22,30 @@ const createOrder = async (req, res, client) => {
     }
 };
 
+
+async function getAllOrders(req, res) {
+    try {
+        const { deliveryStatus, startDate, endDate, productId, limit = 10, offset = 0 } = req.query;
+
+        const filters = {
+            deliveryStatus,
+            startDate,
+            endDate,
+            productId
+        };
+
+        const { success, orders, total } = await orderService.getAllOrders(filters, parseInt(limit), parseInt(offset));
+
+        if (!success) return res.status(400).json({ message: 'Failed to fetch orders' });
+
+        res.status(200).json({ orders, total });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+}
+
+
+
 const getOrdersByUser = async (req, res, client) => {
   const userId = req.query.userId; 
   const filters = req.query;
@@ -174,5 +198,6 @@ module.exports = {
     createOrder,
     getOrdersByUser,
     updateDeliveryStatus,
-    handlePaymentMonetbilNotification
+    handlePaymentMonetbilNotification,
+    getAllOrders
 };

@@ -10,6 +10,13 @@ const orderHandler = require('../controllers/order.controller');
 const setupOrderRoutes = (app, client) => {
     app.use("/order", router);
 
+    router.get('/orders', orderController.getAllOrders);
+
+       // Récupérer les commandes
+       router.get('/list', (req, res) => {
+        orderHandler.getAllOrders(req, res, client);
+    });
+
     // Récupérer les commandes d'un client spécifique
     router.get('/user', (req, res) => {
         orderHandler.getOrdersByUser(req, res, client);
