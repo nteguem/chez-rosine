@@ -5,19 +5,25 @@ require('dotenv').config();
 
 const monetbilService = process.env.PAYMENT_SERVICE_ID;
 const notify_url = process.env.NOTIFICATION_URL_PAIEMENT || "";
-const paiement_url = process.env.PAYMENT_API_ENDPOINT ;
+const paiement_url = process.env.PAYMENT_API_ENDPOINT;
 
-const makePayment = async (user, amount, mobileMoneyPhone,product,quantity,location,client) => {
+const makePayment = async (user, amount, mobileMoneyPhone, product, quantity, location, client) => {
   const payload = {
     service: monetbilService,
-    phonenumber:mobileMoneyPhone,
+    phonenumber: mobileMoneyPhone,
     amount:1,
-    user:`${user.phoneNumber}(${user.pseudo.slice(0, 18)})`,
-    first_name:`${product?.name} ${product?.variation?.name}`,
-    last_name:`${quantity} ${location.slice(0, 30)}`,
-    email:product?.variation?.price,
+    user: `${user.pseudo.slice(0, 30)}`,
+    item_ref: JSON.stringify({
+      productName: product?.name,
+      productVariationName: product?.variation?.name,
+      productVariationPrice: product?.variation?.price,
+      whatsappNumber: `${user.phoneNumber}`,
+      quantity,
+      location
+    }),
     notify_url
   };
+
   try {
     const response = await fetch(paiement_url, {
       method: 'POST',
@@ -26,23 +32,34 @@ const makePayment = async (user, amount, mobileMoneyPhone,product,quantity,locat
       },
       body: JSON.stringify(payload)
     });
-    if (!response.ok) { 
+
+    if (!response.ok) {
       console.log(`HTTP error! status: ${response.status}`);
+      throw new Error(`Payment API returned status ${response.status}`);
     }
 
     const data = await response.json();
+
     const transactionPayload = {
-      ...payload,
-       data,
+      paymentId:data.paymentId,
+      status:data.status,
+      paymentMethod:data.channel,
+      amount:payload.amount,
+      phoneNumber:payload.phonenumber,
+      notifyUrl:payload.notify_url,
+      type:'MONETBIL'
     };
-     await createTransaction(transactionPayload);
+
+    await createTransaction(transactionPayload);
+
     return data;
   } catch (error) {
     await logService.addLog(
       `${error.message}`,
       'makePayment',
       'error'
-  );
+    );
+    throw error; 
   }
 };
 

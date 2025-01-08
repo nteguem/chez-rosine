@@ -80,17 +80,18 @@ const updateDeliveryStatus = async (req, res, client) => {
 
 async function handlePaymentMonetbilSuccess(req, res, client) {
   try {
-    const { user: rawUser,last_name, first_name, email, amount, operator_code, transaction_id, phone, operator_transaction_id, currency } = req.body;
-    const [whatappNumberOnly, pseudo] = (rawUser.match(/^(\d+)\s*\(([^)]+)\)\s*(.*)$/) || []).slice(1).map(part => part.trim());
-    const user = `${whatappNumberOnly} : ${pseudo}`;
-    const location = last_name.split(' ')[1]
-    const quantity = last_name.split(' ')[0]
+    console.log('voici le body paiement',res.body)
+    const { user: rawUser, item_ref, amount, transaction_id, phone, operator_transaction_id, currency } = req.body;
+    const dataItemRef = JSON.parse(item_ref);
+    const user = `${dataItemRef.whatsappNumber}`;
+    const location = dataItemRef.location
+    const quantity = dataItemRef.quantity
     const currentDate = moment().format('dddd D MMMM YYYY à HH:mm:ss');
     
     req.body = { ...req.body, date: currentDate, location,quantity, user };
     // Récupération des données client et livraison
     const [dataCustomer, product] = await Promise.all([
-      userService.getOne(whatappNumberOnly),
+      userService.getOne(dataItemRef.whatsappNumber),
       ProductService.ProductGetOne({ name: first_name.split(' ')[0] }),
     ]);
       // Vérifier si le produit et le client existent
@@ -117,35 +118,30 @@ async function handlePaymentMonetbilSuccess(req, res, client) {
       deliveryPerson: dataCustomer?.user?.id,
       customer: dataCustomer?.user?.id,
       deliveryLocation: location,
-      totalPrice: amount,
-      paymentMethod: operator_code,
-      transactionId: transaction_id,
-      mobileNumber: phone,
-      operatorTransactionId: operator_transaction_id,
-      currency,
+      transaction: transaction_id,
     };
 
     // Preparation de la facture pdf du client
-    const successMessage = `Félicitations ${first_name} ! Votre paiement a été effectué avec succès. Un livreur vous appellera dans les minutes qui suivent. Ci-joint votre facture.`;
+    const successMessage = `Félicitations ${dataItemRef.whatsappNumber} ! Votre paiement a été effectué avec succès. Un livreur vous appellera dans les minutes qui suivent. Ci-joint votre facture.`;
     const pdfBufferInvoice = await fillPdfFields(pathInvoice, req.body);
     const pdfBase64Invoice = pdfBufferInvoice.toString('base64');
-    const pdfNameInvoice = `Invoice_${whatappNumberOnly}`;
+    const pdfNameInvoice = `Invoice_${dataItemRef.whatsappNumber}`;
     const documentType = 'application/pdf';
 
     // Envoi de la notification , generation de facture client et création de la commande
     await Promise.all([
-      sendMediaToNumber(client, whatappNumberOnly, documentType, pdfBase64Invoice, pdfNameInvoice,successMessage),
+      sendMediaToNumber(client, dataItemRef.whatsappNumber, documentType, pdfBase64Invoice, pdfNameInvoice,successMessage),
       orderService.createOrder(orderData)
     ]);
 
     // Notification aux administrateurs
-    const { users: admins } = await userService.list("admin");
-    const adminMessage = `Un client (${whatappNumberOnly}) vient de faire un achat. Veuillez consulter la facture ci-jointe.`;
+    // const { users: admins } = await userService.list("admin");
+    // const adminMessage = `Un client (${dataItemRef.whatsappNumber}) vient de faire un achat. Veuillez consulter la facture ci-jointe.`;
     
-    for (const admin of admins) {
-      await sendMediaToNumber(client, admin.phoneNumber, documentType, pdfBase64Invoice, pdfNameInvoice);
-      await sendMessageToNumber(client, admin.phoneNumber, adminMessage);
-    }
+    // for (const admin of admins) {
+    //   await sendMediaToNumber(client, admin.phoneNumber, documentType, pdfBase64Invoice, pdfNameInvoice);
+    //   await sendMessageToNumber(client, admin.phoneNumber, adminMessage);
+    // }
     res.status(200).send('Success');
   } catch (error) {
     await logService.addLog(

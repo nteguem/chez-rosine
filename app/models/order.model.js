@@ -10,16 +10,11 @@ const orderSchema = new mongoose.Schema({
   }], 
   deliveryPerson: { type: Schema.Types.ObjectId, ref: 'User' }, 
   deliveryLocation: { type: String, required: true }, 
-  totalPrice: { type: Number, required: true }, 
-  paymentMethod: { 
-    type: String, 
-    enum: ['CM_ORANGEMONEY','CM_MTNMOBILEMONEY','CM_EUMM'], 
+  transaction: { 
+    type: Schema.Types.ObjectId, 
+    ref: 'Transaction', 
     required: true 
-  }, 
-  transactionId: { type: String, required: true }, 
-  operatorTransactionId:{ type: String, required: true }, 
-  currency:{ type: String, required: true }, 
-  mobileNumber: { type: String, required: true }, 
+  },
   deliveryTime: { type: Date, required: false }, 
   deliveryStatus: {
     type: String,

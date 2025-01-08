@@ -8,7 +8,7 @@ async function createTransaction(transactionData) {
     return { success: true, transaction, message: "Transaction created successfully." };
   } catch (error) {
     await logService.addLog(`${error.message}`, 'createTransaction', 'error');
-    return {
+    return { 
       success: false,
       message: "An error occurred while creating the transaction.",
       error: error.message,
