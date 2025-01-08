@@ -80,7 +80,7 @@ const updateDeliveryStatus = async (req, res, client) => {
 
 async function handlePaymentMonetbilSuccess(req, res, client) {
   try {
-    console.log('voici le body paiement',res.body)
+    console.log('voici le body paiement',req.body)
     const { user: rawUser, item_ref, transaction_id } = req.body;
     const dataItemRef = JSON.parse(item_ref);
     const user = `${dataItemRef.whatsappNumber}`;
