@@ -82,8 +82,9 @@ async function handlePaymentMonetbilSuccess(req, res, client) {
     const { item_ref, transaction_id,amount,operator_transaction_id} = req.body;
     const dataItemRef = JSON.parse(item_ref);
     const {user,product,quantity,location} = dataItemRef;
+    const {variation} = product;
     const currentDate = moment().format('dddd D MMMM YYYY à HH:mm:ss');
-    req.body = { ...req.body,description:`${product.name} - ${product.variation.name}`,price:product.variation.price, date: currentDate, location,quantity, pseudo:user?.pseudo  };
+    req.body = { ...req.body,description:`${product.name} - ${variation.name}`,price:variation.price, date: currentDate, location,quantity, pseudo:user?.pseudo  };
     const {transaction} = await transactionService.getTransactionById(transaction_id)
     // Préparation des données de la commande
     const orderData = {
@@ -101,7 +102,7 @@ async function handlePaymentMonetbilSuccess(req, res, client) {
       };
 
     // Preparation de la facture pdf du client
-    const successMessage = `Félicitations ${user.pseudo} ! Votre paiement pour *${product.name.variation.price}* ${product.name} - ${product.variation.name}, pour un coût total de ${amount}, a été effectué avec succès. Un livreur vous appellera dans les minutes qui suivent. Ci-joint, votre facture.`;
+    const successMessage = `Félicitations ${user.pseudo} ! Votre paiement pour *${quantity}* ${product.name} - ${variation.name}, pour un coût total de ${amount}, a été effectué avec succès. Un livreur vous appellera dans les minutes qui suivent. Ci-joint, votre facture.`;
     const pdfBufferInvoice = await fillPdfFields(pathInvoice, req.body);
     const pdfBase64Invoice = pdfBufferInvoice.toString('base64');
     const pdfNameInvoice = `Invoice_${user.phoneNumber}`;
@@ -116,7 +117,7 @@ async function handlePaymentMonetbilSuccess(req, res, client) {
 
     // Notification aux administrateurs
     const { users: admins } = await userService.list("admin");
-    const adminMessage = `Un client (${user.pseudo || user.phoneNumber}) a effectué un achat pour *${product.name.variation.price}* ${product.name} - ${product.variation.name}, pour un montant total de ${amount}. Veuillez trouver la facture en pièce jointe.`;
+    const adminMessage = `Un client (${user.pseudo || user.phoneNumber}) a effectué un achat pour *${quantity}* ${product.name} - ${variation.name}, pour un montant total de ${amount}. Veuillez trouver la facture en pièce jointe.`;
     
     for (const admin of admins) {
       await sendMediaToNumber(client, admin.phoneNumber, documentType, pdfBase64Invoice, pdfNameInvoice);
@@ -140,7 +141,8 @@ async function handlePaymentMonetbilSuccess(req, res, client) {
       const { item_ref,amount} = req.body;
       const dataItemRef = JSON.parse(item_ref);
       const {user,product} = dataItemRef;
-      const failureMessage = operatorMessage || `Désolé, Votre paiement d'un montant de *${amount}*  pour *${product.name.variation.price}*  ${product.name} - ${product.variation.name} n'a pas abouti en raison d'une erreur lors de la transaction. Veuillez vérifier vos informations de paiement et réessayer. Si le problème persiste, contactez-nous pour de l'aide. Nous nous excusons pour tout désagrément.\n\nPour toute assistance, Tapez 3 dans le menu principal pour parler directement à un membre de notre équipe.\n\nCordialement,\n\n L'équipe les bons plats`;
+      const {variation} = product;
+      const failureMessage = operatorMessage || `Désolé, Votre paiement d'un montant de *${amount}*  pour *${quantity}*  ${product.name} - ${variation.name} n'a pas abouti en raison d'une erreur lors de la transaction. Veuillez vérifier vos informations de paiement et réessayer. Si le problème persiste, contactez-nous pour de l'aide. Nous nous excusons pour tout désagrément.\n\nPour toute assistance, Tapez 3 dans le menu principal pour parler directement à un membre de notre équipe.\n\nCordialement,\n\n L'équipe les bons plats`;
       await sendMessageToNumber(client,user.phoneNumber, failureMessage);
       res.status(200).send('Failure');
     } catch (error) {
