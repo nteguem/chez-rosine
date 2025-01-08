@@ -82,9 +82,8 @@ async function handlePaymentMonetbilSuccess(req, res, client) {
     const { item_ref, transaction_id,amount,operator_transaction_id} = req.body;
     const dataItemRef = JSON.parse(item_ref);
     const {user,product,quantity,location} = dataItemRef;
-    const {variation} = product;
     const currentDate = moment().format('dddd D MMMM YYYY à HH:mm:ss');
-    req.body = { ...req.body,description:`${product.name} - ${variation.name}`,price:variation.price, date: currentDate, location,quantity, ...user , ...product };
+    req.body = { ...req.body,description:`${product.name} - ${product.variation.name}`,price:product.variation.price, date: currentDate, location,quantity, ...user , ...product };
     const {transaction} = await transactionService.getTransactionById(transaction_id)
     // Préparation des données de la commande
     const orderData = {
@@ -116,15 +115,16 @@ async function handlePaymentMonetbilSuccess(req, res, client) {
     ]);
 
     // Notification aux administrateurs
-    // const { users: admins } = await userService.list("admin");
-    // const adminMessage = `Un client (${user.pseudo : user.phoneNumber}) vient de faire un achat. Veuillez consulter la facture ci-jointe.`;
+    const { users: admins } = await userService.list("admin");
+    const adminMessage = `Un client (${user.pseudo || user.phoneNumber}) a effectué un achat pour le produit ${product.name} - ${product.variation.name}, pour un montant total de ${amount}. Veuillez trouver la facture en pièce jointe.`;
     
-    // for (const admin of admins) {
-    //   await sendMediaToNumber(client, admin.phoneNumber, documentType, pdfBase64Invoice, pdfNameInvoice);
-    //   await sendMessageToNumber(client, admin.phoneNumber, adminMessage);
-    // }
+    for (const admin of admins) {
+      await sendMediaToNumber(client, admin.phoneNumber, documentType, pdfBase64Invoice, pdfNameInvoice);
+      await sendMessageToNumber(client, admin.phoneNumber, adminMessage);
+    }
     res.status(200).send('Success');
-  } catch (error) {
+  } 
+  catch (error) {
     await logService.addLog(
       `${error.message}`,
       'handlePaymentMonetbilSuccess',
@@ -137,9 +137,11 @@ async function handlePaymentMonetbilSuccess(req, res, client) {
   
   async function handlePaymentMonetbilFailure(req, res, client, operatorMessage) {
     try {
-      const whatappNumberOnly = req.body.user.split('(')[0].trim();
-      const failureMessage = operatorMessage || `Désolé, Votre paiement mobile pour *${req.body.last_name} ${req.body.first_name}* n'a pas abouti en raison d'une erreur lors de la transaction. Veuillez vérifier vos informations de paiement et réessayer. Si le problème persiste, contactez-nous pour de l'aide. Nous nous excusons pour tout désagrément.\n\nPour toute assistance, Tapez 3 dans le menu principal pour parler directement à un membre de notre équipe.\n\nCordialement,\n\n L'équipe les bons plats`;
-      await sendMessageToNumber(client,whatappNumberOnly, failureMessage);
+      const { item_ref,amount} = req.body;
+      const dataItemRef = JSON.parse(item_ref);
+      const {user,product} = dataItemRef;
+      const failureMessage = operatorMessage || `Désolé, Votre paiement d'un montant de *${amount}*  pour *${product.name} - ${product.variation.name}* n'a pas abouti en raison d'une erreur lors de la transaction. Veuillez vérifier vos informations de paiement et réessayer. Si le problème persiste, contactez-nous pour de l'aide. Nous nous excusons pour tout désagrément.\n\nPour toute assistance, Tapez 3 dans le menu principal pour parler directement à un membre de notre équipe.\n\nCordialement,\n\n L'équipe les bons plats`;
+      await sendMessageToNumber(client,user.phoneNumber, failureMessage);
       res.status(200).send('Failure');
     } catch (error) {
       await logService.addLog(
@@ -153,12 +155,17 @@ async function handlePaymentMonetbilSuccess(req, res, client) {
   
   async function handlePaymentMonetbilNotification(req, res, client) {
     try {
-      if (req.body.message === 'FAILED') {
+      if (req.body.message.toLowerCase() === 'failed') {
         await handlePaymentMonetbilFailure(req, res, client);
-      } else if (req.body.message === 'INTERNAL_PROCESSING_ERROR') {
+      } else if (req.body.message.toLowerCase() === 'internal_processing_error') {
         const operatorMessage = `Désolé, Votre paiement mobile a rencontré une erreur due à un problème technique avec le service *${req.body.operator}*. Nous travaillons sur la résolution de ce problème. En attendant, nous vous recommandons d'essayer à nouveau plus tard. Désolé pour le dérangement.\n\nPour toute assistance,Tapez 3 dans le menu principal pour parler directement à un membre de notre équipe.\n\n L'équipe les bons plats`;
         await handlePaymentMonetbilFailure(req, res, client, operatorMessage);
-      } 
+      }
+      else if (req.body.message.toLowerCase() === 'expired') {
+        const operatorMessage = `Désolé, votre transaction a expiré car le paiement n'a pas été validé dans les délais impartis. Cela peut être dû à une connexion lente ou à un retard dans la validation. Veuillez réessayer à nouveau pour compléter votre achat.\n\nSi vous avez besoin d'assistance, tapez 3 dans le menu principal pour entrer en contact avec un membre de notre équipe.\n\nMerci de votre compréhension, L'équipe Les Bons Plats.`;
+        await handlePaymentMonetbilFailure(req, res, client, operatorMessage);
+    }
+    
       else if (req.body.message.toLowerCase() === 'successfull' || req.body.message.toLowerCase() === 'successful') {
         await handlePaymentMonetbilSuccess(req, res, client);
       }
