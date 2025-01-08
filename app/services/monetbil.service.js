@@ -10,6 +10,7 @@ const paiement_url = process.env.PAYMENT_API_ENDPOINT;
 const makePayment = async (user, amount, mobileMoneyPhone, product, quantity, location, client) => {
   const payload = {
     service: monetbilService,
+    user:user?.pseudo.slice(0,30),
     phonenumber: mobileMoneyPhone,
     amount:1,
     item_ref: JSON.stringify({
