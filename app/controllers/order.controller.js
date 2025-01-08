@@ -80,59 +80,35 @@ const updateDeliveryStatus = async (req, res, client) => {
 
 async function handlePaymentMonetbilSuccess(req, res, client) {
   try {
-    console.log('voici le body paiement',req.body)
-    const { user: rawUser, item_ref, transaction_id } = req.body;
+    const { item_ref, transaction_id } = req.body;
     const dataItemRef = JSON.parse(item_ref);
-    const user = `${dataItemRef.whatsappNumber}`;
-    const location = dataItemRef.location
-    const quantity = dataItemRef.quantity
-    const currentDate = moment().format('dddd D MMMM YYYY à HH:mm:ss');
-    
-    req.body = { ...req.body, date: currentDate, location,quantity, user };
-    // Récupération des données client et livraison
-    const [dataCustomer, product] = await Promise.all([
-      userService.getOne(dataItemRef.whatsappNumber),
-      ProductService.ProductGetOne({ name: first_name.split(' ')[0] }),
-    ]);
-      // Vérifier si le produit et le client existent
-      if (!product) {
-        await logService.addLog(
-          `Produit non trouvé.`,
-          'handlePaymentMonetbilSuccess',
-          'warning'
-        );
-        return ResponseService.notFound(res, { message: "Produit non trouvé." });
-      }
-  
-      if (!dataCustomer) {
-        await logService.addLog(
-          `Client non trouvé.`,
-          'handlePaymentMonetbilSuccess',
-          'warning'
-        );
-        return ResponseService.notFound(res, { message: "Client non trouvé." });
-      }
+    const {user,product,quantity,location} = dataItemRef;
+    // const currentDate = moment().format('dddd D MMMM YYYY à HH:mm:ss');
+    // req.body = { ...req.body, date: currentDate, location,quantity, user };
+    console.log("user",user)
+    console.log("product",product)
+ 
     // Préparation des données de la commande
-    const orderData = {
-      products: [product?.product?.id],
-      deliveryPerson: dataCustomer?.user?.id,
-      customer: dataCustomer?.user?.id,
-      deliveryLocation: location,
-      transaction: transaction_id,
-    };
+    // const orderData = {
+    //   products: [product?.product?.id],
+    //   deliveryPerson: dataCustomer?.user?.id,
+    //   customer: dataCustomer?.user?.id,
+    //   deliveryLocation: location,
+    //   transaction: transaction_id,
+    // };
 
     // Preparation de la facture pdf du client
-    const successMessage = `Félicitations ${dataItemRef.whatsappNumber} ! Votre paiement a été effectué avec succès. Un livreur vous appellera dans les minutes qui suivent. Ci-joint votre facture.`;
-    const pdfBufferInvoice = await fillPdfFields(pathInvoice, req.body);
-    const pdfBase64Invoice = pdfBufferInvoice.toString('base64');
-    const pdfNameInvoice = `Invoice_${dataItemRef.whatsappNumber}`;
-    const documentType = 'application/pdf';
+    // const successMessage = `Félicitations ${dataItemRef.whatsappNumber} ! Votre paiement a été effectué avec succès. Un livreur vous appellera dans les minutes qui suivent. Ci-joint votre facture.`;
+    // const pdfBufferInvoice = await fillPdfFields(pathInvoice, req.body);
+    // const pdfBase64Invoice = pdfBufferInvoice.toString('base64');
+    // const pdfNameInvoice = `Invoice_${dataItemRef.whatsappNumber}`;
+    // const documentType = 'application/pdf';
 
     // Envoi de la notification , generation de facture client et création de la commande
-    await Promise.all([
-      sendMediaToNumber(client, dataItemRef.whatsappNumber, documentType, pdfBase64Invoice, pdfNameInvoice,successMessage),
-      orderService.createOrder(orderData)
-    ]);
+    // await Promise.all([
+    //   sendMediaToNumber(client, dataItemRef.whatsappNumber, documentType, pdfBase64Invoice, pdfNameInvoice,successMessage),
+    //   orderService.createOrder(orderData)
+    // ]);
 
     // Notification aux administrateurs
     // const { users: admins } = await userService.list("admin");
