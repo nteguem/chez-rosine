@@ -91,7 +91,7 @@ async function handlePaymentMonetbilSuccess(req, res, client) {
       deliveryPerson: user?.id,
       customer: user?._id,
       deliveryLocation: location,
-      transaction: transaction._id,
+      transaction: transaction.id,
     };
 
        // Préparation des données de mise a jour de la transaction
