@@ -79,7 +79,7 @@ const updateDeliveryStatus = async (req, res, client) => {
 
 async function handlePaymentMonetbilSuccess(req, res, client) {
   try {
-    const { item_ref, transaction_id,amount } = req.body;
+    const { item_ref, transaction_id,amount,operator_transaction_id} = req.body;
     const dataItemRef = JSON.parse(item_ref);
     const {user,product,quantity,location} = dataItemRef;
     const currentDate = moment().format('dddd D MMMM YYYY à HH:mm:ss');
