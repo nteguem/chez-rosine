@@ -84,8 +84,7 @@ async function handlePaymentMonetbilSuccess(req, res, client) {
     const {user,product,quantity,location} = dataItemRef;
     const currentDate = moment().format('dddd D MMMM YYYY à HH:mm:ss');
     req.body = { ...req.body, date: currentDate, location,quantity, ...user , ...product };
-    const transaction = transactionService.getTransactionById(transaction_id)
-    console.log("transactionsss",transaction)
+    const {transaction} = await transactionService.getTransactionById(transaction_id)
     // Préparation des données de la commande
     const orderData = {
       products: [product?._id],
