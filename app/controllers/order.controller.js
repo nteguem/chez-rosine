@@ -177,7 +177,8 @@ async function handlePaymentMonetbilSuccess(req, res, client) {
       } else if (req.body.message === 'INTERNAL_PROCESSING_ERROR') {
         const operatorMessage = `Désolé, Votre paiement mobile a rencontré une erreur due à un problème technique avec le service *${req.body.operator}*. Nous travaillons sur la résolution de ce problème. En attendant, nous vous recommandons d'essayer à nouveau plus tard. Désolé pour le dérangement.\n\nPour toute assistance,Tapez 3 dans le menu principal pour parler directement à un membre de notre équipe.\n\n L'équipe les bons plats`;
         await handlePaymentMonetbilFailure(req, res, client, operatorMessage);
-      } else if(req.body.message === 'SUCCESSFULL') {
+      } 
+      else if (req.body.message.toLowerCase() === 'successfull' || req.body.message.toLowerCase() === 'successful') {
         await handlePaymentMonetbilSuccess(req, res, client);
       }
       else{
