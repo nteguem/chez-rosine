@@ -16,13 +16,14 @@ async function createTransaction(transactionData) {
   }
 }
 
-async function updateTransaction(transactionId, updatedData) {
+async function updateTransaction(paymentId, updatedData) {
   try {
-    const transaction = await Transaction.findByIdAndUpdate(
-      transactionId,
+    const transaction = await Transaction.findOneAndUpdate(
+      { paymentId },
       { $set: updatedData },
       { new: true }
     );
+
     if (transaction) {
       return { success: true, transaction, message: "Transaction updated successfully." };
     } else {
@@ -37,6 +38,7 @@ async function updateTransaction(transactionId, updatedData) {
     };
   }
 }
+
 
 async function deleteTransaction(transactionId) {
   try {
@@ -78,9 +80,12 @@ async function listTransactions(limit = 10, offset = 0) {
   }
 }
 
-async function getTransactionById(transactionId) {
+async function getTransactionById(paymentId) {
   try {
-    const transaction = await Transaction.findById(transactionId);
+    // Trouver la transaction basée sur le champ paymentId
+    const transaction = await Transaction.findOne({ paymentId });
+    
+    // Vérifier si la transaction existe
     if (transaction) {
       return { success: true, transaction };
     } else {
@@ -95,6 +100,7 @@ async function getTransactionById(transactionId) {
     };
   }
 }
+
 
 module.exports = {
   createTransaction,

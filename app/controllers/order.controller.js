@@ -1,8 +1,7 @@
 const orderService = require('../services/order.service');
-const userService = require("../services/user.service")
+const transactionService = require("../services/transaction.service")
 const ResponseService = require('../services/response.service');
 const logService = require('../services/log.service');
-const ProductService = require("../services/product.service")
 const { sendMessageToNumber, sendMediaToNumber } = require('../views/whatsApp/whatsappMessaging');
 const { fillPdfFields } = require("../services/fillFormPdf.service");
 const moment = require("moment");
@@ -80,39 +79,44 @@ const updateDeliveryStatus = async (req, res, client) => {
 
 async function handlePaymentMonetbilSuccess(req, res, client) {
   try {
-    const { item_ref, transaction_id } = req.body;
+    const { item_ref, transaction_id,amount } = req.body;
     const dataItemRef = JSON.parse(item_ref);
     const {user,product,quantity,location} = dataItemRef;
-    // const currentDate = moment().format('dddd D MMMM YYYY à HH:mm:ss');
-    // req.body = { ...req.body, date: currentDate, location,quantity, user };
-    console.log("user",user)
-    console.log("product",product)
- 
+    const currentDate = moment().format('dddd D MMMM YYYY à HH:mm:ss');
+    req.body = { ...req.body, date: currentDate, location,quantity, ...user , ...product };
+    const transaction = transactionService.getTransactionById(transaction_id)
     // Préparation des données de la commande
-    // const orderData = {
-    //   products: [product?.product?.id],
-    //   deliveryPerson: dataCustomer?.user?.id,
-    //   customer: dataCustomer?.user?.id,
-    //   deliveryLocation: location,
-    //   transaction: transaction_id,
-    // };
+    const orderData = {
+      products: [product?.id],
+      deliveryPerson: user?.id,
+      customer: user?.id,
+      deliveryLocation: location,
+      transaction: transaction,
+    };
+
+       // Préparation des données de mise a jour de la transaction
+       const transactionData = {
+        operatorTransactionId: operator_transaction_id,
+        status: "COMPLETED",
+      };
 
     // Preparation de la facture pdf du client
-    // const successMessage = `Félicitations ${dataItemRef.whatsappNumber} ! Votre paiement a été effectué avec succès. Un livreur vous appellera dans les minutes qui suivent. Ci-joint votre facture.`;
-    // const pdfBufferInvoice = await fillPdfFields(pathInvoice, req.body);
-    // const pdfBase64Invoice = pdfBufferInvoice.toString('base64');
-    // const pdfNameInvoice = `Invoice_${dataItemRef.whatsappNumber}`;
-    // const documentType = 'application/pdf';
+    const successMessage = `Félicitations ${user.pseudo} ! Votre paiement pour ${product.name} - ${product.variation.name}, pour un coût total de ${amount}, a été effectué avec succès. Un livreur vous appellera dans les minutes qui suivent. Ci-joint, votre facture.`;
+    const pdfBufferInvoice = await fillPdfFields(pathInvoice, req.body);
+    const pdfBase64Invoice = pdfBufferInvoice.toString('base64');
+    const pdfNameInvoice = `Invoice_${user.phoneNumber}`;
+    const documentType = 'application/pdf';
 
     // Envoi de la notification , generation de facture client et création de la commande
-    // await Promise.all([
-    //   sendMediaToNumber(client, dataItemRef.whatsappNumber, documentType, pdfBase64Invoice, pdfNameInvoice,successMessage),
-    //   orderService.createOrder(orderData)
-    // ]);
+    await Promise.all([
+      sendMediaToNumber(client, user.phoneNumber, documentType, pdfBase64Invoice, pdfNameInvoice,successMessage),
+      orderService.createOrder(orderData),
+      transactionService.updateTransaction(transaction_id,transactionData)
+    ]);
 
     // Notification aux administrateurs
     // const { users: admins } = await userService.list("admin");
-    // const adminMessage = `Un client (${dataItemRef.whatsappNumber}) vient de faire un achat. Veuillez consulter la facture ci-jointe.`;
+    // const adminMessage = `Un client (${user.pseudo : user.phoneNumber}) vient de faire un achat. Veuillez consulter la facture ci-jointe.`;
     
     // for (const admin of admins) {
     //   await sendMediaToNumber(client, admin.phoneNumber, documentType, pdfBase64Invoice, pdfNameInvoice);
