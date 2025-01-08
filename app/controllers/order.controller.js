@@ -87,11 +87,11 @@ async function handlePaymentMonetbilSuccess(req, res, client) {
     const transaction = transactionService.getTransactionById(transaction_id)
     // Préparation des données de la commande
     const orderData = {
-      products: [product?.id],
+      products: [product?._id],
       deliveryPerson: user?.id,
-      customer: user?.id,
+      customer: user?._id,
       deliveryLocation: location,
-      transaction: transaction.id,
+      transaction: transaction._id,
     };
 
        // Préparation des données de mise a jour de la transaction
