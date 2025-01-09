@@ -34,7 +34,7 @@ const UserCommander = async (user, msg, client) => {
 
           if (updateResult.success) {
             user.data.botStatus = "on"; // Mettre à jour localement
-            replyToMessage(
+            await replyToMessage(
               client,
               msg,
               "🤖 L'assistant virtuel a été activé avec succès. Je suis à nouveau disponible pour vous aider !"
