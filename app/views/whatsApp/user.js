@@ -57,7 +57,6 @@ const UserCommander = async (user, msg, client) => {
   
         // Vérifier si le bot est désactivé
         if (user.data.botStatus === "off") {
-          replyToMessage(client, msg, "🤖 L'assistant virtuel est désactivé. Tapez *on* pour le réactiver.");
           return; // Si désactivé, ne pas continuer la logique
         }
       }
