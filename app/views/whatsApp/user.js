@@ -39,6 +39,8 @@ const UserCommander = async (user, msg, client) => {
               msg,
               "🤖 L'assistant virtuel a été activé avec succès. Je suis à nouveau disponible pour vous aider !"
             );
+            await reset(user);
+            await replyInvalid(msg, client, user);  
           } else {
             replyToMessage(client, msg, "⚠️ Une erreur est survenue lors de la mise à jour de vos préférences. Veuillez réessayer.");
           }
@@ -61,6 +63,7 @@ const UserCommander = async (user, msg, client) => {
         const updateResult = await userService.update(user.data.phoneNumber, { botStatus: "off" });
 
         if (updateResult.success) {
+          await reset(user);
           replyToMessage(
             client,
             msg,
