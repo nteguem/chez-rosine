@@ -97,7 +97,7 @@ const orderCommander = async (user, msg, client) => {
         orderData[phoneNumber].answers["user"] = user.data;
 
         if (userInput === "*") {
-            orderData[phoneNumber].step = Math.max(orderData[phoneNumber].step - 1, 1);
+            orderData[phoneNumber].step = Math.max(Math.floor(orderData[phoneNumber].step) - 1, 1);
         } else {
             switch (orderData[phoneNumber].step) {
                 case 1:

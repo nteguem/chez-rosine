@@ -124,7 +124,6 @@ async function handlePaymentMonetbilSuccess(req, res, client) {
     const adminMessage = `Un client (${user.pseudo || user.phoneNumber}) a effectué un achat pour *${quantity}* ${product.name} - ${variation.name}, pour un montant total de ${amount}. Veuillez trouver la facture en pièce jointe.`;
     
     for (const admin of admins) {
-      console.log("admin",admin)
       await sendMediaToNumber(client, admin.phoneNumber, documentType, pdfBase64Invoice, pdfNameInvoice);
       await sendMessageToNumber(client, admin.phoneNumber, adminMessage);
     }
