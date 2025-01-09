@@ -42,9 +42,6 @@ const UserCommander = async (user, msg, client) => {
           } else {
             replyToMessage(client, msg, "⚠️ Une erreur est survenue lors de la mise à jour de vos préférences. Veuillez réessayer.");
           }
-        } else {
-          // Si le bot est désactivé, ne pas traiter d'autres messages
-          replyToMessage(client, msg, "🤖 L'assistant virtuel est désactivé. Tapez *on* pour le réactiver.");
         }
         return; // Arrêter immédiatement tout autre traitement
       }
