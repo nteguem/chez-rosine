@@ -27,25 +27,38 @@ const UserCommander = async (user, msg, client) => {
   try {
     if (!msg.isGroup && !msg.isStatus) {
       if (!Steps[user.data.phoneNumber]) reset(user);
-      // Vérifier si le bot est désactivé pour l'utilisateur
-      if (user.data.botStatus === "off") {
-        return;
-      }
       if (msg.body === "#") {
         reset(user);
         replyToMessage(client, msg, menuData(user.data.pseudo, user.exist));
         return;
       }
-      if (msg.body.toLowerCase() === "on" || msg.body.toLowerCase() === "off") {
-        const botStatus = msg.body; // "on" ou "off"
-        const updateResult = await userService.update(user.data.phoneNumber, { botStatus });
-        if (updateResult.success) {
-          const responseMessage = botStatus === "on"
-            ? "🤖 L'assistant virtuel a été activé avec succès. Je suis à nouveau disponible pour vous aider !"
-            : "🤖 L'assistant virtuel a été désactivé. Vous ne recevrez plus de réponses automatiques jusqu'à réactivation.";
-          replyToMessage(client, msg, responseMessage);
-        } else {
-          replyToMessage(client, msg, "⚠️ Une erreur est survenue lors de la mise à jour de vos préférences. Veuillez réessayer.");
+        // Gestion des commandes "on" et "off"
+        if (msg.body.toLowerCase() === "on" || msg.body.toLowerCase() === "off") {
+          const botStatus = msg.body.toLowerCase(); // "on" ou "off"
+          const updateResult = await userService.update(user.data.phoneNumber, { botStatus });
+  
+          if (updateResult.success) {
+            const responseMessage = botStatus === "on"
+              ? "🤖 L'assistant virtuel a été activé avec succès. Je suis à nouveau disponible pour vous aider !"
+              : "🤖 L'assistant virtuel a été désactivé. Vous ne recevrez plus de réponses automatiques jusqu'à réactivation.";
+            replyToMessage(client, msg, responseMessage);
+  
+            // Si le bot est activé, permettre de continuer la conversation
+            if (botStatus === "on") {
+              user.data.botStatus = "on"; // Mettre à jour localement pour continuer la logique
+            } else {
+              return; // Si désactivé, arrêter ici
+            }
+          } else {
+            replyToMessage(client, msg, "⚠️ Une erreur est survenue lors de la mise à jour de vos préférences. Veuillez réessayer.");
+            return;
+          }
+        }
+  
+        // Vérifier si le bot est désactivé
+        if (user.data.botStatus === "off") {
+          replyToMessage(client, msg, "🤖 L'assistant virtuel est désactivé. Tapez *on* pour le réactiver.");
+          return; // Si désactivé, ne pas continuer la logique
         }
       }
       const { currentMenu } = Steps[user.data.phoneNumber];
