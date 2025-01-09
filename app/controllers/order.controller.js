@@ -84,7 +84,7 @@ async function handlePaymentMonetbilSuccess(req, res, client) {
     const {user,product,quantity,location} = dataItemRef;
     const {variation} = product;
     const currentDate = moment().format('dddd D MMMM YYYY à HH:mm:ss');
-    req.body = { ...req.body,description:`${product.name} - ${variation.name}`,price:variation.price.toString(), date: currentDate, location,quantity:quantity.toString(), pseudo:user?.pseudo,phoneNumber:user.phoneNumber.toString()  };
+    req.body = { ...req.body,description:`${product.name} - ${variation.name}`,price:variation.price.toString(), date: currentDate, location,quantity:quantity.toString(), pseudo:user?.pseudo,phoneNumber:user.phoneNumber.toString(),amountProduct:(quantity*variation.price).toString()  };
     const {transaction} = await transactionService.getTransactionById(transaction_id)
     // Préparation des données de la commande
     const orderData = {
@@ -116,10 +116,12 @@ async function handlePaymentMonetbilSuccess(req, res, client) {
     ]);
 
     // Notification aux administrateurs
+    
     const { users: admins } = await userService.list("admin");
     const adminMessage = `Un client (${user.pseudo || user.phoneNumber}) a effectué un achat pour *${quantity}* ${product.name} - ${variation.name}, pour un montant total de ${amount}. Veuillez trouver la facture en pièce jointe.`;
     
     for (const admin of admins) {
+      console.log("admin",admin)
       await sendMediaToNumber(client, admin.phoneNumber, documentType, pdfBase64Invoice, pdfNameInvoice);
       await sendMessageToNumber(client, admin.phoneNumber, adminMessage);
     }
