@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const Wallet = require('./wallet.model'); 
 
 const transactionSchema = new mongoose.Schema({
     paymentId: {
@@ -49,6 +50,41 @@ const transactionSchema = new mongoose.Schema({
     createdAt: {
         type: Date,
         default: Date.now
+    }
+});
+
+// Middleware Post-Save pour la mise à jour du portefeuille
+transactionSchema.post('findOneAndUpdate', async function (doc, next) {
+    try {
+        if (!doc) return next();
+
+        // Vérifiez si le statut est passé à "COMPLETED"
+        if (doc.status === 'COMPLETED') {
+            const { paymentMethod, amount } = doc;
+
+            // Recherchez ou créez un portefeuille pour l'opérateur correspondant
+            let wallet = await Wallet.findOne({ operator: paymentMethod });
+
+            if (!wallet) {
+                // Créez un portefeuille si inexistant
+                wallet = new Wallet({
+                    operator: paymentMethod,
+                    totalRevenue: 0
+                });
+            }
+
+            // Ajoutez le montant au revenu total
+            wallet.totalRevenue += amount;
+            wallet.lastUpdated = Date.now();
+
+            // Sauvegardez le portefeuille
+            await wallet.save();
+        }
+
+        next();
+    } catch (error) {
+        console.error('Error updating wallet:', error);
+        next(error); 
     }
 });
 
