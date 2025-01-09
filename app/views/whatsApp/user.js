@@ -36,7 +36,7 @@ const UserCommander = async (user, msg, client) => {
         replyToMessage(client, msg, menuData(user.data.pseudo, user.exist));
         return;
       }
-      if (msg.body.lowerCase() === "on" || msg.body.lowerCase() === "off") {
+      if (msg.body.toLowerCase() === "on" || msg.body.toLowerCase() === "off") {
         const botStatus = msg.body; // "on" ou "off"
         const updateResult = await userService.update(user.data.phoneNumber, { botStatus });
         if (updateResult.success) {
