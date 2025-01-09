@@ -18,7 +18,7 @@ const replyInvalid = async (msg, client, user, message = `⚠️ Option non vali
   }
   if (Steps[user.data.phoneNumber].currentMenu === "mainMenu" && !user.exist) {
     await sendMessageToNumber(client, user.data.phoneNumber, menuData(user.data.pseudo, user.exist));
-  } 
+  }
 };
 
 
@@ -27,11 +27,26 @@ const UserCommander = async (user, msg, client) => {
   try {
     if (!msg.isGroup && !msg.isStatus) {
       if (!Steps[user.data.phoneNumber]) reset(user);
-
+      // Vérifier si le bot est désactivé pour l'utilisateur
+      if (user.data.botStatus === "off") {
+        return;
+      }
       if (msg.body === "#") {
         reset(user);
         replyToMessage(client, msg, menuData(user.data.pseudo, user.exist));
         return;
+      }
+      if (msg.body.lowerCase() === "on" || msg.body.lowerCase() === "off") {
+        const botStatus = msg.body; // "on" ou "off"
+        const updateResult = await userService.update(user.data.phoneNumber, { botStatus }, client);
+        if (updateResult.success) {
+          const responseMessage = botStatus === "on"
+            ? "🤖 L'assistant virtuel a été activé avec succès. Je suis à nouveau disponible pour vous aider !"
+            : "🤖 L'assistant virtuel a été désactivé. Vous ne recevrez plus de réponses automatiques jusqu'à réactivation.";
+          replyToMessage(client, msg, responseMessage);
+        } else {
+          replyToMessage(client, msg, "⚠️ Une erreur est survenue lors de la mise à jour de vos préférences. Veuillez réessayer.");
+        }
       }
       const { currentMenu } = Steps[user.data.phoneNumber];
       switch (currentMenu) {
@@ -46,11 +61,10 @@ const UserCommander = async (user, msg, client) => {
               Steps[user.data.phoneNumber].currentMenu = "promotionsMenu";
               replyToMessage(client, msg, "📋 Offres spéciales : 10% sur 30 Nems, livraison gratuite dès 10 000 CFA.");
               break;
-              case "3":
-              case "off":
-                    Steps[user.data.phoneNumber].currentMenu = "assistanceMenu";
-                    replyToMessage(client, msg, `Salut, ${user.data.pseudo}! Vous pouvez laisser un message ici, et un membre de notre équipe vous répondra dans les minutes qui suivent. Merci de votre patience ! 😊 \n\n_Si vous souhaitez à tout moment reprendre la conversation avec notre assistant virtuel 🤖, tapez #._`);
-                    break;
+            case "3":
+              Steps[user.data.phoneNumber].currentMenu = "assistanceMenu";
+              replyToMessage(client, msg, `Salut, ${user.data.pseudo}! Vous pouvez laisser un message ici, et un membre de notre équipe vous répondra dans les minutes qui suivent. Merci de votre patience ! 😊 \n\n_Si vous souhaitez à tout moment reprendre la conversation avec notre assistant virtuel 🤖, tapez #._`);
+              break;
             default:
               await replyInvalid(msg, client, user);
           }
@@ -63,7 +77,7 @@ const UserCommander = async (user, msg, client) => {
           await reset(user)
           break;
         case "assistanceMenu":
-          const {users} = await userService.list("admin")
+          const { users } = await userService.list("admin")
           users.forEach(async (item, index) => {
             const adminMessage = `Salut ${item.pseudo},\n\nUn utilisateur de "Des Bons Plats" (WhatsApp : ${user.data.phoneNumber}, Pseudo : ${user.data.pseudo}) souhaite entrer directement en contact avec vous.\n\nVoici le message qu'il a laissé :\n\n« ${msg.body} »\n\nDès que possible, merci de répondre rapidement à cet utilisateur via le numéro WhatsApp associé à "Des Bons Plats". 😊\n\nBonne journée !`;
             await sendMessageToNumber(client, item.phoneNumber, adminMessage);

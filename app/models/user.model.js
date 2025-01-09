@@ -23,6 +23,11 @@ const userSchema = new mongoose.Schema({
     enum: ['available', 'busy', 'offline'], 
     default: 'available' 
   }, 
+  botStatus: { 
+    type: String, 
+    enum: ['on', 'off'], 
+    default: 'on'
+  }
 }, { timestamps: true });
 
 // Génération du code de parrainage unique
