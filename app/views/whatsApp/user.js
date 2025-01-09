@@ -38,7 +38,7 @@ const UserCommander = async (user, msg, client) => {
       }
       if (msg.body.lowerCase() === "on" || msg.body.lowerCase() === "off") {
         const botStatus = msg.body; // "on" ou "off"
-        const updateResult = await userService.update(user.data.phoneNumber, { botStatus }, client);
+        const updateResult = await userService.update(user.data.phoneNumber, { botStatus });
         if (updateResult.success) {
           const responseMessage = botStatus === "on"
             ? "🤖 L'assistant virtuel a été activé avec succès. Je suis à nouveau disponible pour vous aider !"
