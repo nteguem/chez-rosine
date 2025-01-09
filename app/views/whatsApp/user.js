@@ -99,8 +99,9 @@ const UserCommander = async (user, msg, client) => {
         default:
           await replyInvalid(msg, client, user);
       }
-    }
-  } catch (error) {
+    
+  }
+   catch (error) {
     await logService.addLog(
       `${error.message}`,
       'UserCommander',
