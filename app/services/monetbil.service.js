@@ -7,7 +7,7 @@ const monetbilService = process.env.PAYMENT_SERVICE_ID;
 const notify_url = process.env.NOTIFICATION_URL_PAIEMENT || "";
 const paiement_url = process.env.PAYMENT_API_ENDPOINT;
 
-const makePayment = async (user, amount, mobileMoneyPhone, product, quantity, location, client) => {
+const makePayment = async (user, amount, mobileMoneyPhone, product, quantity, location, isOnSite = false) => {
   const payload = {
     service: monetbilService,
     user:user?.pseudo.slice(0,30),
@@ -17,7 +17,8 @@ const makePayment = async (user, amount, mobileMoneyPhone, product, quantity, lo
       product: product,
       user: user,
       quantity,
-      location
+      location,
+      isOnSite
     }),
     notify_url
   };

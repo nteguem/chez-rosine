@@ -7,7 +7,8 @@ const { sendMessageToNumber, sendMediaToNumber } = require('../views/whatsApp/wh
 const { fillPdfFields } = require("../services/fillFormPdf.service");
 const moment = require("moment");
 moment.locale('fr');  
-const pathInvoice = "../templates-pdf/invoice.pdf"
+const pathInvoiceDelivery = "../templates-pdf/invoice.pdf"
+const pathInvoiceOnSite = "../templates-pdf/invoiceOnSite.pdf"
 
 // Créer une nouvelle commande
 const createOrder = async (req, res, client) => {
@@ -82,10 +83,11 @@ async function handlePaymentMonetbilSuccess(req, res, client) {
   try {
     const { item_ref, transaction_id,amount,operator_transaction_id} = req.body;
     const dataItemRef = JSON.parse(item_ref);
-    const {user,product,quantity,location} = dataItemRef;
+    const {user,product,quantity,location,isOnSite} = dataItemRef;
     const {variation} = product;
+    const pathInvoice = isOnSite ? pathInvoiceOnSite : pathInvoiceDelivery;
     const currentDate = moment().format('dddd D MMMM YYYY à HH:mm:ss');
-    req.body = { ...req.body,description:`${product.name} - ${variation.name}`,price:variation.price.toString(), date: currentDate, location,quantity:quantity.toString(), pseudo:user?.pseudo,phoneNumber:user.phoneNumber.toString(),amountProduct:(quantity*variation.price).toString()  };
+    req.body = { ...req.body,description:`${product.name} - ${variation.name}`,price:variation.price.toString(), date: currentDate, location,quantity:quantity.toString(), pseudo:user?.pseudo,phoneNumber:user.phoneNumber.toString(),amountProduct:(quantity*variation.price).toString(),amountPaid:amount.toString(),remainingAmount:(quantity*variation.price - amount).toString(),amount:isOnSite ? (quantity*variation.price).toString() : (quantity*variation.price + 1000).toString()  };
     const {transaction} = await transactionService.getTransactionById(transaction_id)
     // Préparation des données de la commande
     const orderData = {

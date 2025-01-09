@@ -61,8 +61,8 @@ const formatOrderSummary = (product, quantity, deliveryFee, totalPrice, delivery
         `${note}`;
 }
 
-const requestPaiement = async (user, amount, mobileMoneyPhone, product, quantity) => {
-    const paymentResponse = await makePayment(user, amount, mobileMoneyPhone, product, quantity, orderData[user.phoneNumber].answers["Location"]);
+const requestPaiement = async (user, amount, mobileMoneyPhone, product, quantity,isOnSite) => {
+    const paymentResponse = await makePayment(user, amount, mobileMoneyPhone, product, quantity, orderData[user.phoneNumber].answers["Location"],isOnSite);
 
     try {
         if (paymentResponse.status === "REQUEST_ACCEPTED") {
@@ -239,13 +239,14 @@ const steps = [
     { message: `Veuillez fournir votre numéro Mobile Money ou Orange Money pour le paiement.` },
     {
         message: async (phoneNumber) => {
+            const isOnSite = orderData[phoneNumber].answers["Location"] === productsData.location;
             const product = orderData[phoneNumber].answers["ChoiceProduct"];
             const quantity = orderData[phoneNumber].answers["QuantityProduct"];
             const mobileMoneyPhone = orderData[phoneNumber].answers["mobileMoneyNumber"];
             const deliveryFee = productsData.deliveryFee;
-            const totalPrice = orderData[phoneNumber].answers["Location"] === productsData.location ? (product.price * quantity) / 2 : product.price * quantity + deliveryFee;
+            const totalPrice = isOnSite ? (product.price * quantity) / 2 : product.price * quantity + deliveryFee;
             const user = orderData[phoneNumber].answers["user"];
-            const result = await requestPaiement(user, totalPrice, mobileMoneyPhone, product, quantity);
+            const result = await requestPaiement(user, totalPrice, mobileMoneyPhone, product, quantity,isOnSite);
             return result;
         }
     },
