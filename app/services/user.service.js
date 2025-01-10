@@ -59,7 +59,7 @@ async function login(phoneNumber, password,client) {
       return { success: false, error: 'Invalid credentials' };
     }
 
-    const token = jwt.sign({ userId: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1h' });
+    const token = jwt.sign({ userId: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '2m' });
     return { success: true, token, user };
   } catch (error) {
     logger(client).error('Error login user:', error);
