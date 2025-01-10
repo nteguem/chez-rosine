@@ -40,7 +40,6 @@ function generateReferralCode() {
   return code;
 }
 
-// Middleware avant sauvegarde : génération du code de parrainage et hashage du mot de passe
 userSchema.pre('save', async function (next) {
   if (this.isNew) {
     let code;
@@ -52,12 +51,23 @@ userSchema.pre('save', async function (next) {
     this.referralCode = code;
   }
 
-  // Hash du mot de passe avant sauvegarde si modifié
+  // Hash the password before saving
   if (this.isModified('password')) {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
   }
 
+  next();
+});
+
+userSchema.pre('findOneAndUpdate', async function (next) {
+  const update = this.getUpdate();
+
+  if (update.$set && update.$set.password) {
+    const salt = await bcrypt.genSalt(10);
+    update.$set.password = await bcrypt.hash(update.$set.password, salt);
+    this.setUpdate(update);
+  }
   next();
 });
 

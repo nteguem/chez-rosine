@@ -68,12 +68,12 @@ async function login(phoneNumber, password,client) {
 }
 
 
-async function update(phoneNumber, updatedData, client) {
+async function update(phoneNumber, updatedData,client) { 
   try {
     const updatedUser = await User.findOneAndUpdate(
       { phoneNumber: phoneNumber },
       { $set: updatedData },
-      { new: true } // Ceci renvoie le document mis à jour plutôt que l'ancien
+      { new: true }  
     );
     if (updatedUser) {
       return {
@@ -85,11 +85,7 @@ async function update(phoneNumber, updatedData, client) {
       return { success: false, message: "Utilisateur non trouvé" };
     }
   } catch (error) {
-    await logService.addLog(
-      `${error.message}`,
-      'update',
-      'error'
-    );
+    logger(client).error('Error update user:', error);
     return {
       success: false,
       message: "Erreur lors de la mise à jour de l'utilisateur",
