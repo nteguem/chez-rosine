@@ -3,13 +3,18 @@ const { save } = require('../../services/user.service');
 const { UserCommander } = require("./user");
 const { AdminCommander } = require("./admin")
 const logService = require('../../services/log.service');
+const { isChatGPTNumber, handleChatGPTResponse } = require('./whatsappMessaging');
 
 const SESSION_FILE_PATH = '../sessions/les-bons-plats';
+
+// Stockage global pour suivre les conversations ChatGPT
+global.chatGPTConversations = new Map();
 
 const initializeWhatsAppClient = (io) => {
   const puppeteerConfig = {
     args: ['--no-sandbox'],
   };
+
   // Add executablePath only on Linux
   if (process.platform === 'linux') {
     puppeteerConfig.executablePath = '/usr/bin/google-chrome-stable';
@@ -39,11 +44,11 @@ const initializeWhatsAppClient = (io) => {
 
   client.on('disconnected', () => {
     io.emit('qrCode', "disconnected");
-      io.emit('numberBot', "");
-      client.logout(); // Déconnecter le client WhatsApp
-      setTimeout(() => {
-        client.initialize();
-      }, 2000); 
+    io.emit('numberBot', "");
+    client.logout();
+    setTimeout(() => {
+      client.initialize();
+    }, 2000);
   });
 
   return client;
@@ -51,20 +56,25 @@ const initializeWhatsAppClient = (io) => {
 
 const handleIncomingMessages = (client) => {
   client.on('message', async (msg) => {
-    const contact = await msg.getContact();
-    const response = await save(contact.number, contact.pushname);
     try {
-      if (response?.data?.role == "user") {
+      const contact = await msg.getContact();
+
+      // Si le message vient de ChatGPT
+      if (isChatGPTNumber(contact.number)) {
+        await handleChatGPTResponse(client, contact.number, msg.body);
+        return;
+      }
+
+      const response = await save(contact.number, contact.pushname);
+      
+      if (response?.data?.role === "user") {
         await UserCommander(response, msg, client);
+      } else if (response?.data?.role === "admin") {
+        await AdminCommander(response, msg, client);
+      } else {
+        msg.reply(response.message);
       }
-      else if (response?.data?.role == "admin") {
-        await AdminCommander(response, msg, client)
-      }
-      else {
-        msg.reply(response.message)
-      }
-    }
-    catch (err) {
+    } catch (error) {
       await logService.addLog(
         `${error.message}`,
         'handleIncomingMessages',
